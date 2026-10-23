@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b8e6ed">
+  <title>弹弓小队</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20302f;
+      --muted: #667775;
+      --cream: #fff8e8;
+      --green: #315e4d;
+      --coral: #e87859;
+      --yellow: #f3c95d;
+      --line: #d7e1d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #f5f4e9;
+      font-family: "Trebuchet MS", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+    }
+    .page { width: min(100% - 40px, 1120px); margin: 0 auto; padding: 24px 0 32px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+    .mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; color: var(--ink); background: var(--yellow); font-size: 21px; transform: rotate(-7deg); }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .stat { min-width: 82px; padding: 7px 12px; border-left: 1px solid var(--line); }
+    .stat-label { display: block; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+    .stat-value { display: block; margin-top: 2px; font-size: 18px; font-weight: 800; }
+    .icon-button { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #fffdf5; cursor: pointer; font-size: 18px; }
+    .icon-button:hover { border-color: var(--green); background: #edf3dc; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 15px 0 20px; }
+    .kicker { margin: 0 0 7px; color: var(--green); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(28px, 5vw, 43px); line-height: 1.06; letter-spacing: 0; }
+    .subtitle { margin: 9px 0 0; color: var(--muted); font-size: 14px; }
+    .hint { flex: none; padding: 9px 12px; border-radius: 6px; color: #5b5c41; background: #f0e6bd; font-size: 12px; font-weight: 700; }
+    .arena { position: relative; overflow: hidden; border: 2px solid #dce6d5; border-radius: 12px; background: #b8e6ed; box-shadow: 0 10px 24px #37563a12; }
+    canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; touch-action: none; cursor: crosshair; }
+    .toast { position: absolute; top: 16px; left: 50%; max-width: calc(100% - 32px); padding: 9px 14px; border: 1px solid #ffffffb0; border-radius: 999px; color: #254338; background: #fff9e8e8; font-size: 13px; font-weight: 800; text-align: center; transform: translateX(-50%); pointer-events: none; }
+    .bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 15px; }
+    .ammo { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .ammo-dots { display: flex; gap: 5px; }
+    .ammo-dot { width: 13px; height: 13px; border: 2px solid #738879; border-radius: 50%; background: var(--coral); }
+    .ammo-dot.used { background: transparent; opacity: .45; }
+    .reset { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 15px; border: 0; border-radius: 7px; color: #fffdf2; background: var(--green); cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
+    .reset:hover { background: #234a3a; }
+    .footer-note { color: #859088; font-size: 11px; }
+    @media (max-width: 620px) {
+      .page { width: min(100% - 24px, 520px); padding-top: 12px; }
+      .topbar { align-items: flex-start; }
+      .brand { font-size: 12px; }
+      .mark { width: 34px; height: 34px; }
+      .stat { min-width: 60px; padding: 5px 8px; }
+      .stat-label { font-size: 9px; }
+      .stat-value { font-size: 16px; }
+      .icon-button { width: 36px; height: 36px; }
+      .intro { align-items: flex-start; flex-direction: column; padding: 13px 0 15px; }
+      .subtitle { font-size: 12px; }
+      .hint { padding: 7px 10px; font-size: 11px; }
+      .arena { border-radius: 8px; }
+      .toast { top: 9px; padding: 7px 11px; font-size: 11px; }
+      .bottom { align-items: flex-start; flex-direction: column; gap: 11px; }
+      .bottom-actions { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="mark" aria-hidden="true">↗</span><span>弹弓小队 · 训练场</span></div>
+      <div class="toolbar">
+        <div class="stat"><span class="stat-label">得分</span><span class="stat-value" id="score">0000</span></div>
+        <div class="stat"><span class="stat-label">目标</span><span class="stat-value" id="targets">3 / 3</span></div>
+        <button class="icon-button" id="sound-button" type="button" aria-label="切换音效" title="切换音效">♪</button>
+      </div>
+    </header>
+    <section class="intro">
+      <div><p class="kicker">第一关 / 木箱练习</p><h1>瞄准，拉弓，发射！</h1><p class="subtitle">把靶子都打下来，看看你能拿几分。</p></div>
+      <div class="hint">按住小队成员，向后拖动</div>
+    </section>
+    <section class="arena" aria-label="弹弓游戏区域">
+      <canvas id="game" aria-label="拖动弹弓上的小队成员来瞄准并发射"></canvas>
+      <div class="toast" id="message" aria-live="polite">拖动小队成员，松开发射</div>
+    </section>
+    <div class="bottom">
+      <div class="footer-note">小提示：拉得越远，发射越有力。</div>
+      <div class="bottom-actions">
+        <div class="ammo" aria-label="剩余弹药"><span>弹药</span><span class="ammo-dots" id="ammo"></span></div>
+        <button class="reset" id="reset" type="button"><span aria-hidden="true">↻</span>重新开始</button>
+      </div>
+    </div>
+  </main>
+  <script>
+    const canvas = document.querySelector("#game");
+    const ctx = canvas.getContext("2d");
+    const scoreNode = document.querySelector("#score");
+    const targetsNode = document.querySelector("#targets");
+    const ammoNode = document.querySelector("#ammo");
+    const messageNode = document.querySelector("#message");
+    const anchor = { x: 205, y: 365 };
+    const floorY = 474;
+    const maxShots = 3;
+    let score = 0;
+    let shots = 0;
+    let dragging = false;
+    let dragPoint = { ...anchor };
+    let projectile = null;
+    let targets = [];
+    let blocks = [];
+    let debris = [];
+    let soundOn = false;
+    let audioContext = null;
+    let lastTime = 0;
+
+    function resetGame() {
+      score = 0;
+      shots = 0;
+      dragging = false;
+      dragPoint = { ...anchor };
+      projectile = null;
+      debris = [];
+      targets = [
+        { x: 694, y: 373, r: 20, vx: 0, vy: 0, rotation: 0, angularVelocity: 0, health: 34, mass: 1.2, knockedOut: false, knockoutTime: 0, alive: true },
+        { x: 765, y: 373, r: 20, vx: 0, vy: 0, rotation: 0, angularVelocity: 0, health: 34, mass: 1.2, knockedOut: false, knockoutTime: 0, alive: true },
+        { x: 730, y: 271, r: 20, vx: 0, vy: 0, rotation: 0, angularVelocity: 0, health: 34, mass: 1.2, knockedOut: false, knockoutTime: 0, alive: true }
+      ];
+      blocks = [
+        { x: 680, y: 393, w: 29, h: 76, alive: true, color: "#c78b52" },
+        { x: 751, y: 393, w: 29, h: 76, alive: true, color: "#c78b52" },
+        { x: 696, y: 350, w: 68, h: 20, alive: true, color: "#dda86c" },
+        { x: 711, y: 316, w: 39, h: 54, alive: true, color: "#b97848" },
+        { x: 698, y: 291, w: 64, h: 18, alive: true, color: "#e0ad70" }
+      ];
+      renderHud();
+      setMessage("拖动小队成员，松开发射");
+    }
+
+    function renderHud() {
+      scoreNode.textContent = String(score).padStart(4, "0");
+      const remaining = targets.filter(target => target.alive && !target.knockedOut).length;
+      targetsNode.textContent = `${remaining} / 3`;
+      ammoNode.replaceChildren();
+      for (let index = 0; index < maxShots; index += 1) {
+        const dot = document.createElement("span");
+        dot.className = `ammo-dot${index < shots ? " used" : ""}`;
+        ammoNode.append(dot);
+      }
+    }
+
+    function setMessage(text) { messageNode.textContent = text; }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.width * 0.56 * ratio);
+      ctx.setTransform(canvas.width / 1000, 0, 0, canvas.height / 560, 0, 0);
+    }
+
+    function roundedRect(x, y, width, height, radius, fill, stroke) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+
+    function drawBackground() {
+      const sky = ctx.createLinearGradient(0, 0, 0, 500);
+      sky.addColorStop(0, "#9edce7");
+      sky.addColorStop(1, "#e3f1d2");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, 1000, 560);
+      ctx.fillStyle = "#fff8da";
+      ctx.beginPath(); ctx.arc(850, 94, 34, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ffffff70";
+      drawCloud(320, 105, 1); drawCloud(580, 155, .72); drawCloud(120, 190, .58);
+      ctx.fillStyle = "#a8d39d";
+      ctx.beginPath(); ctx.moveTo(0, 405); ctx.quadraticCurveTo(180, 300, 370, 410); ctx.quadraticCurveTo(610, 315, 1000, 405); ctx.lineTo(1000, 500); ctx.lineTo(0, 500); ctx.fill();
+      ctx.fillStyle = "#8abc80";
+      ctx.beginPath(); ctx.moveTo(0, 440); ctx.quadraticCurveTo(240, 360, 500, 440); ctx.quadraticCurveTo(760, 350, 1000, 430); ctx.lineTo(1000, 500); ctx.lineTo(0, 500); ctx.fill();
+      ctx.fillStyle = "#f5d888";
+      ctx.fillRect(0, floorY, 1000, 86);
+      ctx.fillStyle = "#dfbd6b";
+      ctx.fillRect(0, floorY, 1000, 7);
+      for (let x = 16; x < 1000; x += 31) {
+        ctx.fillStyle = x % 2 ? "#e9cb7b" : "#edcf81";
+        ctx.fillRect(x, 493 + (x % 3) * 3, 13, 3);
+      }
+    }
+
+    function drawCloud(x, y, scale) {
+      ctx.beginPath();
+      ctx.arc(x, y, 19 * scale, Math.PI, 0);
+      ctx.arc(x + 22 * scale, y - 10 * scale, 25 * scale, Math.PI, 0);
+      ctx.arc(x + 49 * scale, y, 17 * scale, Math.PI, 0);
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawSlingshot() {
+      ctx.lineCap = "round";
+      ctx.lineWidth = 18;
+      ctx.strokeStyle = "#755038";
+      ctx.beginPath(); ctx.moveTo(190, 469); ctx.lineTo(201, 351); ctx.lineTo(185, 319); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(201, 351); ctx.lineTo(222, 319); ctx.stroke();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#bd7556";
+      const pouch = dragging ? dragPoint : anchor;
+      ctx.beginPath(); ctx.moveTo(185, 319); ctx.lineTo(pouch.x, pouch.y); ctx.lineTo(222, 319); ctx.stroke();
+      ctx.fillStyle = "#79533c";
+      ctx.beginPath(); ctx.ellipse(193, 465, 34, 8, 0, 0, Math.PI * 2); ctx.fill();
+      if (!projectile || !projectile.launched) drawBird(pouch.x, pouch.y, 21);
+      if (dragging) drawAimGuide();
+    }
+
+    function drawAimGuide() {
+      const dx = anchor.x - dragPoint.x;
+      const dy = anchor.y - dragPoint.y;
+      const vx = dx * .19;
+      const vy = dy * .19;
+      ctx.fillStyle = "#ffffffb5";
+      for (let index = 1; index <= 7; index += 1) {
+        const time = index * 4;
+        const x = anchor.x + vx * time;
+        const y = anchor.y + vy * time + .5 * .31 * time * time;
+        if (x > 970 || y > floorY) break;
+        ctx.beginPath(); ctx.arc(x, y, Math.max(2, 5 - index * .45), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    function drawBird(x, y, radius) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#e87859";
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f4b35f";
+      ctx.beginPath(); ctx.ellipse(-6, 8, 9, 6, -.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff9e9";
+      ctx.beginPath(); ctx.arc(7, -6, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#263a36";
+      ctx.beginPath(); ctx.arc(9, -6, 2.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f3c95d";
+      ctx.beginPath(); ctx.moveTo(15, 1); ctx.lineTo(29, 5); ctx.lineTo(15, 9); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+
+    function drawTarget(target) {
+      ctx.save(); ctx.translate(target.x, target.y); ctx.rotate(target.rotation);
+      ctx.fillStyle = "#72a75b";
+      ctx.beginPath(); ctx.arc(0, 0, target.r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#9bc879";
+      ctx.beginPath(); ctx.arc(-5, -7, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff8e8";
+      ctx.beginPath(); ctx.arc(-6, -3, 4, 0, Math.PI * 2); ctx.arc(7, -3, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#263a36";
+      ctx.beginPath(); ctx.arc(-5, -3, 1.8, 0, Math.PI * 2); ctx.arc(8, -3, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#355a42"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(1, 5, 5, .2, Math.PI - .2); ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBlock(block) {
+      if (!block.alive) return;
+      roundedRect(block.x, block.y, block.w, block.h, 4, block.color, "#895d3e");
+      ctx.strokeStyle = "#f4d29c"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(block.x + 5, block.y + 8); ctx.lineTo(block.x + block.w - 5, block.y + 8); ctx.stroke();
+      if (block.h > 32) {
+        ctx.beginPath(); ctx.moveTo(block.x + 6, block.y + block.h - 10); ctx.lineTo(block.x + block.w - 6, block.y + block.h - 10); ctx.stroke();
+      }
+    }
+
+    function draw() {
+      drawBackground();
+      drawSlingshot();
+      blocks.forEach(drawBlock);
+      targets.forEach(target => { if (target.alive) drawTarget(target); });
+      if (projectile && projectile.launched) drawBird(projectile.x, projectile.y, 18);
+      debris.forEach(piece => {
+        ctx.save(); ctx.translate(piece.x, piece.y); ctx.rotate(piece.rotation);
+        ctx.fillStyle = piece.color; ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size);
+        ctx.restore();
+      });
+      requestAnimationFrame(draw);
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (event.clientX - rect.left) * 1000 / rect.width, y: (event.clientY - rect.top) * 560 / rect.height };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const point = pointerPosition(event);
+      const birdPoint = projectile && !projectile.launched ? dragPoint : anchor;
+      if (shots < maxShots && (!projectile || !projectile.launched) && Math.hypot(point.x - birdPoint.x, point.y - birdPoint.y) < 36) {
+        dragging = true;
+        canvas.setPointerCapture(event.pointerId);
+        dragPoint = point;
+        event.preventDefault();
+      }
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (!dragging) return;
+      const point = pointerPosition(event);
+      const dx = point.x - anchor.x;
+      const dy = point.y - anchor.y;
+      const distance = Math.hypot(dx, dy);
+      const limit = 82;
+      const scale = distance > limit ? limit / distance : 1;
+      dragPoint = { x: anchor.x + dx * scale, y: anchor.y + dy * scale };
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = anchor.x - dragPoint.x;
+      const dy = anchor.y - dragPoint.y;
+      const speed = Math.hypot(dx, dy) * .19;
+      if (speed > 2) {
+        shots += 1;
+        projectile = { x: anchor.x, y: anchor.y, vx: dx * .19, vy: dy * .19, launched: true, age: 0, hitTargets: new Set() };
+        renderHud();
+        setMessage("漂亮！继续观察落点");
+        playSound(280, .08);
+      }
+      dragPoint = { ...anchor };
+    });
+
+    canvas.addEventListener("pointercancel", () => { dragging = false; dragPoint = { ...anchor }; });
+
+    function breakBlock(block) {
+      block.alive = false;
+      for (let index = 0; index < 5; index += 1) {
+        debris.push({ x: block.x + block.w / 2, y: block.y + block.h / 2, vx: (Math.random() - .5) * 8, vy: -Math.random() * 7 - 2, size: 7 + Math.random() * 9, rotation: Math.random() * 2, spin: (Math.random() - .5) * .15, color: index % 2 ? "#dba66c" : "#b97848" });
+      }
+      score += 50;
+      playSound(160, .1);
+    }
+
+    function update(delta) {
+      const step = Math.min(delta / 16.67, 2);
+      if (projectile && projectile.launched) {
+        projectile.age += step;
+        projectile.vy += .31 * step;
+        projectile.x += projectile.vx * step;
+        projectile.y += projectile.vy * step;
+        const speed = Math.hypot(projectile.vx, projectile.vy);
+        for (const target of targets) {
+          if (!target.alive || target.knockedOut || projectile.hitTargets.has(target)) continue;
+          const distance = Math.hypot(projectile.x - target.x, projectile.y - target.y);
+          if (distance < target.r + 18) {
+            const impactSpeed = Math.hypot(projectile.vx, projectile.vy);
+            const normalX = distance > 0 ? (target.x - projectile.x) / distance : 1;
+            const normalY = distance > 0 ? (target.y - projectile.y) / distance : 0;
+            const impulse = Math.max(0, impactSpeed - 1.2) * .72;
+            projectile.hitTargets.add(target);
+            target.vx += normalX * impulse / target.mass;
+            target.vy += normalY * impulse / target.mass;
+            target.angularVelocity += (normalX * (projectile.y - target.y) - normalY * (projectile.x - target.x)) * .012;
+            target.health -= Math.max(0, impactSpeed - 2) * 7;
+            projectile.vx *= -.18;
+            projectile.vy *= -.18;
+            if (target.health <= 0) {
+              target.knockedOut = true;
+              target.knockoutTime = 0;
+              target.angularVelocity += normalX * .08;
+              score += 100;
+              setMessage("冲击命中！目标被撞倒 +100 分");
+            } else {
+              score += 25;
+              setMessage("命中！目标被撞飞 +25 分");
+            }
+            playSound(impactSpeed > 8 ? 520 : 360, .12);
+          }
+        }
+        for (const block of blocks) {
+          if (!block.alive) continue;
+          if (projectile.x + 14 > block.x && projectile.x - 14 < block.x + block.w && projectile.y + 14 > block.y && projectile.y - 14 < block.y + block.h) {
+            if (speed > 5) breakBlock(block);
+            projectile.vx *= -.38;
+            projectile.vy *= -.45;
+            projectile.x += projectile.vx * step;
+            projectile.y += projectile.vy * step;
+          }
+        }
+        if (projectile.y > floorY - 18 && projectile.x < 650) {
+          projectile.y = floorY - 18;
+          projectile.vy *= -.28;
+          projectile.vx *= .72;
+          if (Math.abs(projectile.vy) < 1.4) projectile.vy = 0;
+        }
+        if (projectile.age > 140 || projectile.x > 1040 || projectile.y > 570 || Math.hypot(projectile.vx, projectile.vy) < .8) {
+          projectile = null;
+          if (shots >= maxShots) setMessage(targets.some(target => target.alive && !target.knockedOut) ? "弹药用完了，重新开始再挑战！" : "全部命中！太棒了！按重新开始再玩一局");
+          else setMessage(targets.some(target => target.alive && !target.knockedOut) ? "再来一发！拖动小队成员" : "全部命中！太棒了！");
+        }
+      }
+      targets.forEach(target => {
+        if (!target.alive) return;
+        target.vy += .34 * step;
+        target.x += target.vx * step;
+        target.y += target.vy * step;
+        target.rotation += target.angularVelocity * step;
+
+        for (const block of blocks) {
+          if (!block.alive) continue;
+          const closestX = Math.max(block.x, Math.min(target.x, block.x + block.w));
+          const closestY = Math.max(block.y, Math.min(target.y, block.y + block.h));
+          const offsetX = target.x - closestX;
+          const offsetY = target.y - closestY;
+          const distance = Math.hypot(offsetX, offsetY);
+          if (distance >= target.r || distance === 0) continue;
+          const normalX = offsetX / distance;
+          const normalY = offsetY / distance;
+          target.x += normalX * (target.r - distance);
+          target.y += normalY * (target.r - distance);
+          const normalSpeed = target.vx * normalX + target.vy * normalY;
+          if (normalSpeed < 0) {
+            const impact = -normalSpeed;
+            target.vx -= 1.35 * normalSpeed * normalX;
+            target.vy -= 1.35 * normalSpeed * normalY;
+            target.angularVelocity += normalX * normalY * impact * .025;
+            if (impact > 5 && !target.knockedOut) {
+              target.health -= (impact - 5) * 2;
+              if (target.health <= 0) {
+                target.knockedOut = true;
+                target.knockoutTime = 0;
+                score += 100;
+                setMessage("撞上木架！目标被撞倒 +100 分");
+              }
+            }
+          }
+        }
+
+        if (target.y + target.r > floorY) {
+          target.y = floorY - target.r;
+          if (target.vy > 1.5) target.angularVelocity += target.vx * .002;
+          target.vy = target.vy > 1.5 ? -target.vy * .28 : 0;
+          target.vx *= .82;
+          target.angularVelocity *= .72;
+        }
+        target.vx *= target.y + target.r >= floorY ? .98 : .995;
+        target.vy *= .999;
+        target.angularVelocity *= .985;
+        if (target.knockedOut) {
+          target.knockoutTime += step;
+          if (target.knockoutTime > 150 || target.x < -target.r || target.x > 1020) target.alive = false;
+        } else if (Math.hypot(target.vx, target.vy) < .12 && Math.abs(target.angularVelocity) < .006) {
+          target.vx = 0;
+          target.vy = 0;
+          target.angularVelocity = 0;
+        }
+      });
+      debris = debris.filter(piece => piece.y < 600);
+      debris.forEach(piece => { piece.vy += .32 * step; piece.x += piece.vx * step; piece.y += piece.vy * step; piece.rotation += piece.spin * step; });
+      renderHud();
+    }
+
+    function playSound(frequency, duration) {
+      if (!soundOn) return;
+      try {
+        audioContext ||= new AudioContext();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = frequency;
+        oscillator.type = "triangle";
+        gain.gain.setValueAtTime(.045, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + duration);
+        oscillator.connect(gain); gain.connect(audioContext.destination);
+        oscillator.start(); oscillator.stop(audioContext.currentTime + duration);
+      } catch { /* 浏览器不支持音频时保持静音即可 */ }
+    }
+
+    function frame(now) {
+      update(now - (lastTime || now));
+      lastTime = now;
+      requestAnimationFrame(frame);
+    }
+
+    document.querySelector("#reset").addEventListener("click", resetGame);
+    document.querySelector("#sound-button").addEventListener("click", event => {
+      soundOn = !soundOn;
+      event.currentTarget.textContent = soundOn ? "♫" : "♪";
+      event.currentTarget.setAttribute("aria-label", soundOn ? "关闭音效" : "开启音效");
+      if (soundOn) playSound(440, .08);
+    });
+    new ResizeObserver(resizeCanvas).observe(canvas);
+    resizeCanvas();
+    resetGame();
+    requestAnimationFrame(draw);
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
