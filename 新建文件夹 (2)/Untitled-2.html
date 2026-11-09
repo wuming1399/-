@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b8e6ed">
+  <title>弹弓小队</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20302f;
+      --muted: #667775;
+      --cream: #fff8e8;
+      --green: #315e4d;
+      --coral: #e87859;
+      --yellow: #f3c95d;
+      --line: #d7e1d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #f5f4e9;
+      font-family: "Trebuchet MS", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+    }
+    .page { width: min(100% - 40px, 1120px); margin: 0 auto; padding: 24px 0 32px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+    .mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; color: var(--ink); background: var(--yellow); font-size: 21px; transform: rotate(-7deg); }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .stat { min-width: 82px; padding: 7px 12px; border-left: 1px solid var(--line); }
+    .stat-label { display: block; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+    .stat-value { display: block; margin-top: 2px; font-size: 18px; font-weight: 800; }
+    .icon-button { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #fffdf5; cursor: pointer; font-size: 18px; }
+    .icon-button:hover { border-color: var(--green); background: #edf3dc; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 15px 0 20px; }
+    .kicker { margin: 0 0 7px; color: var(--green); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(28px, 5vw, 43px); line-height: 1.06; letter-spacing: 0; }
+    .subtitle { margin: 9px 0 0; color: var(--muted); font-size: 14px; }
+    .hint { flex: none; padding: 9px 12px; border-radius: 6px; color: #5b5c41; background: #f0e6bd; font-size: 12px; font-weight: 700; }
+    .level-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fffdf5; }
+    .level-controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .level-controls select { min-width: 180px; padding: 7px 30px 7px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #f8f6e8; font: inherit; font-size: 12px; font-weight: 700; }
+    .level-button { min-height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fffdf5; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
+    .level-button:hover:not(:disabled) { border-color: var(--green); background: #edf3dc; }
+    .level-button:disabled { opacity: .45; cursor: default; }
+    .level-progress { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .arena { position: relative; overflow: hidden; border: 2px solid #dce6d5; border-radius: 12px; background: #b8e6ed; box-shadow: 0 10px 24px #37563a12; }
+    canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; touch-action: none; cursor: crosshair; }
+    .toast { position: absolute; top: 16px; left: 50%; max-width: calc(100% - 32px); padding: 9px 14px; border: 1px solid #ffffffb0; border-radius: 999px; color: #254338; background: #fff9e8e8; font-size: 13px; font-weight: 800; text-align: center; transform: translateX(-50%); pointer-events: none; }
+    .bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 15px; }
+    .ammo { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .ammo-dots { display: flex; gap: 5px; }
+    .ammo-dot { width: 13px; height: 13px; border: 2px solid #738879; border-radius: 50%; background: var(--coral); }
+    .ammo-dot.used { background: transparent; opacity: .45; }
+    .reset { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 15px; border: 0; border-radius: 7px; color: #fffdf2; background: var(--green); cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
+    .reset:hover { background: #234a3a; }
+    .debug-toggle { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--green); background: #fffdf5; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
+    .debug-toggle:hover, .debug-toggle[aria-expanded="true"] { border-color: var(--green); background: #edf3dc; }
+    .debug-panel { display: none; align-items: center; justify-content: flex-end; gap: 10px; padding: 11px 12px; border: 1px dashed #c9d6c7; border-radius: 8px; color: var(--muted); background: #f8f6e8; font-size: 12px; font-weight: 800; }
+    .debug-panel.open { display: flex; }
+    .debug-panel input { width: 52px; padding: 6px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #fffdf5; font: inherit; text-align: center; }
+    .debug-action { padding: 7px 10px; border: 0; border-radius: 5px; color: #fffdf2; background: var(--coral); cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }
+    .debug-action:hover { background: #cf6045; }
+    .footer-note { color: #859088; font-size: 11px; }
+    @media (max-width: 620px) {
+      .page { width: min(100% - 24px, 520px); padding-top: 12px; }
+      .topbar { align-items: flex-start; }
+      .brand { font-size: 12px; }
+      .mark { width: 34px; height: 34px; }
+      .stat { min-width: 60px; padding: 5px 8px; }
+      .stat-label { font-size: 9px; }
+      .stat-value { font-size: 16px; }
+      .icon-button { width: 36px; height: 36px; }
+      .intro { align-items: flex-start; flex-direction: column; padding: 13px 0 15px; }
+      .level-controls { flex-wrap: wrap; justify-content: space-between; gap: 7px; }
+      .level-controls label { order: -1; width: 100%; justify-content: space-between; }
+      .level-controls select { flex: 1; }
+      .subtitle { font-size: 12px; }
+      .hint { padding: 7px 10px; font-size: 11px; }
+      .arena { border-radius: 8px; }
+      .toast { top: 9px; padding: 7px 11px; font-size: 11px; }
+      .bottom { align-items: flex-start; flex-direction: column; gap: 11px; }
+      .bottom-actions { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+      .debug-panel { align-items: flex-start; flex-wrap: wrap; justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="mark" aria-hidden="true">↗</span><span>弹弓小队 · 训练场</span></div>
+      <div class="toolbar">
+        <div class="stat"><span class="stat-label">得分</span><span class="stat-value" id="score">0000</span></div>
+        <div class="stat"><span class="stat-label">目标</span><span class="stat-value" id="targets">3 / 3</span></div>
+        <button class="icon-button" id="sound-button" type="button" aria-label="切换音效" title="切换音效">♪</button>
+      </div>
+    </header>
+    <section class="intro">
+      <div><p class="kicker" id="level-title">第一关 / 木箱练习</p><h1>瞄准，拉弓，发射！</h1><p class="subtitle" id="level-description">把靶子都打下来，看看你能拿几分。</p></div>
+      <div class="hint">拖动障碍物调整布局；按住小队成员发射</div>
+    </section>
+    <div class="level-controls" aria-label="关卡选择">
+      <button class="level-button" id="previous-level" type="button">上一关</button>
+      <label for="level-select">选择关卡
+        <select id="level-select">
+          <option value="0">第一关 / 木箱练习</option>
+          <option value="1">第二关 / 双塔回弹</option>
+          <option value="2">第三关 / 高塔挑战</option>
+        </select>
+      </label>
+      <button class="level-button" id="next-level" type="button">下一关</button>
+      <span class="level-progress" id="level-progress">1 / 3</span>
+    </div>
+    <div class="debug-panel" id="debug-panel" aria-label="调试控制">
+      <label for="debug-amount">增加数量</label>
+      <input id="debug-amount" type="number" min="1" max="99" value="3">
+      <button class="debug-action" id="add-ammo" type="button">增加弹药</button>
+      <button class="debug-action" id="add-targets" type="button">增加小猪</button>
+    </div>
+    <section class="arena" aria-label="弹弓游戏区域">
+      <canvas id="game" aria-label="拖动弹弓上的小队成员来瞄准并发射"></canvas>
+      <div class="toast" id="message" aria-live="polite">拖动小队成员，松开发射</div>
+    </section>
+    <div class="bottom">
+      <div class="footer-note">木、石、玻璃结构会碰撞、倾倒和破碎；拉得越远，发射越有力。</div>
+      <div class="bottom-actions">
+        <div class="ammo" aria-label="剩余弹药"><span>弹药</span><span class="ammo-dots" id="ammo"></span></div>
+        <button class="debug-toggle" id="debug-toggle" type="button" aria-expanded="false">调试</button>
+        <button class="reset" id="reset" type="button"><span aria-hidden="true">↻</span>重新开始</button>
+      </div>
+    </div>
+  </main>
+  <script src="./matter.min.js"></script>
+  <script>
+    const canvas = document.querySelector("#game");
+    const ctx = canvas.getContext("2d");
+    const scoreNode = document.querySelector("#score");
+    const targetsNode = document.querySelector("#targets");
+    const ammoNode = document.querySelector("#ammo");
+    const messageNode = document.querySelector("#message");
+    const levelTitleNode = document.querySelector("#level-title");
+    const levelDescriptionNode = document.querySelector("#level-description");
+    const levelSelectNode = document.querySelector("#level-select");
+    const previousLevelButton = document.querySelector("#previous-level");
+    const nextLevelButton = document.querySelector("#next-level");
+    const levelProgressNode = document.querySelector("#level-progress");
+    const anchor = { x: 205, y: 365 };
+    const floorY = 474;
+    const projectileRadius = 18;
+    const baseShots = 3;
+    const physicsStep = 1000 / 60;
+    let maxShots = baseShots;
+    let score = 0;
+    let shots = 0;
+    let dragging = false;
+    let draggedTarget = null;
+    let draggedTargetPoint = null;
+    let draggedObstacle = null;
+    let draggedObstacleOffset = null;
+    let dragPoint = { ...anchor };
+    let projectile = null;
+    let targets = [];
+    let targetTotal = 3;
+    let blocks = [];
+    let bumpers = [];
+    let debris = [];
+    let explosions = [];
+    let soundOn = false;
+    let audioContext = null;
+    let lastTime = 0;
+    let physicsAccumulator = 0;
+    let physicsEngine = Matter.Engine.create({ enableSleeping: true });
+    let currentLevel = 0;
+    const levels = [
+      {
+        title: "第一关 / 木箱练习",
+        description: "熟悉木、石、玻璃结构；撞上圆形弹力障碍会改变飞行方向。",
+        targets: [[694, 358], [765, 358], [730, 286]],
+        blocks: [
+          [640, 398, 20, 76, "#8e9b9d", "stone"],
+          [680, 398, 29, 76, "#c78b52"],
+          [751, 398, 29, 76, "#c78b52"],
+          [800, 398, 20, 76, "#8e9b9d", "stone"],
+          [640, 378, 180, 20, "#dda86c"],
+          [711, 324, 39, 54, "#b97848"],
+          [711, 306, 39, 18, "#9edce7", "glass"]
+        ],
+        bumpers: [[460, 360, 28]]
+      },
+      {
+        title: "第二关 / 双塔回弹",
+        description: "瞄准弹力障碍反弹，让小鸟绕开塔柱击中木架。",
+        targets: [[692, 358], [762, 358], [727, 286]],
+        blocks: [
+          [640, 398, 20, 76, "#8e9b9d", "stone"],
+          [660, 398, 25, 76, "#c78b52"],
+          [775, 398, 25, 76, "#c78b52"],
+          [800, 398, 20, 76, "#8e9b9d", "stone"],
+          [660, 378, 140, 20, "#dda86c"],
+          [684, 324, 28, 54, "#b97848"],
+          [748, 324, 28, 54, "#b97848"],
+          [684, 306, 92, 18, "#9edce7", "glass"]
+        ],
+        bumpers: [[500, 300, 30]]
+      },
+      {
+        title: "第三关 / 高塔挑战",
+        description: "三层结构考验反弹角度；破坏下层支撑，让高塔整体倒塌。",
+        targets: [[708, 358], [756, 286], [744, 214]],
+        blocks: [
+          [650, 398, 20, 76, "#8e9b9d", "stone"],
+          [680, 398, 25, 76, "#c78b52"],
+          [775, 398, 25, 76, "#c78b52"],
+          [810, 398, 20, 76, "#8e9b9d", "stone"],
+          [650, 378, 180, 20, "#dda86c"],
+          [690, 324, 28, 54, "#b97848"],
+          [750, 324, 28, 54, "#b97848"],
+          [690, 306, 88, 18, "#dda86c"],
+          [716, 252, 24, 54, "#c78b52"],
+          [752, 252, 24, 54, "#c78b52"],
+          [716, 234, 60, 18, "#9edce7", "glass"]
+        ],
+        bumpers: [[525, 285, 32]]
+      }
+    ];
+
+    function setupPhysicsWorld() {
+      physicsEngine = Matter.Engine.create({ enableSleeping: true });
+      physicsEngine.gravity.y = 1;
+      physicsEngine.gravity.scale = .001;
+      const floor = Matter.Bodies.rectangle(500, floorY + 43, 1000, 86, {
+        isStatic: true,
+        friction: .85,
+        label: "floor"
+      });
+      const bodies = [floor];
+      blocks.forEach(block => bodies.push(attachBlockBody(block)));
+      targets.forEach(target => bodies.push(attachTargetBody(target)));
+      bumpers.forEach(bumper => bodies.push(attachBumperBody(bumper)));
+      Matter.Composite.add(physicsEngine.world, bodies);
+      Matter.Events.on(physicsEngine, "collisionStart", handlePhysicsCollisions);
+    }
+
+    function attachBlockBody(block) {
+      const density = block.material === "stone" ? .004 : block.material === "glass" ? .001 : .0018;
+      const body = Matter.Bodies.rectangle(block.x + block.w / 2, block.y + block.h / 2, block.w, block.h, {
+        density,
+        friction: .78,
+        frictionStatic: .9,
+        frictionAir: .012,
+        restitution: .04,
+        chamfer: { radius: 2 },
+        label: `block:${block.material}`
+      });
+      body.gameObject = block;
+      block.body = body;
+      return body;
+    }
+
+    function attachTargetBody(target) {
+      const body = Matter.Bodies.circle(target.x, target.y, target.r, {
+        density: .0012,
+        friction: .72,
+        frictionStatic: .85,
+        frictionAir: .018,
+        restitution: .08,
+        label: "pig"
+      });
+      body.gameObject = target;
+      target.body = body;
+      return body;
+    }
+
+    function attachBumperBody(bumper) {
+      const body = Matter.Bodies.circle(bumper.x, bumper.y, bumper.radius, {
+        isStatic: true,
+        friction: .02,
+        restitution: 1,
+        label: "spring-bumper"
+      });
+      body.gameObject = bumper;
+      bumper.body = body;
+      return body;
+    }
+
+    function handlePhysicsCollisions(event) {
+      event.pairs.forEach(pair => {
+        const first = pair.bodyA.gameObject;
+        const second = pair.bodyB.gameObject;
+        if (!first || !second) return;
+        const normal = pair.collision.normal;
+        const relativeVelocityX = pair.bodyB.velocity.x - pair.bodyA.velocity.x;
+        const relativeVelocityY = pair.bodyB.velocity.y - pair.bodyA.velocity.y;
+        const impactSpeed = Math.abs(relativeVelocityX * normal.x + relativeVelocityY * normal.y);
+        if (impactSpeed < 3) return;
+        const contact = pair.collision.supports[0] || pair.collision;
+        const impactX = contact.x === undefined ? (pair.bodyA.position.x + pair.bodyB.position.x) / 2 : contact.x;
+        const impactY = contact.y === undefined ? (pair.bodyA.position.y + pair.bodyB.position.y) / 2 : contact.y;
+        if (first.r) damageTarget(first, impactSpeed);
+        if (second.r) damageTarget(second, impactSpeed);
+        if (first.material) damageBlock(first, impactX, impactY, relativeVelocityX, relativeVelocityY);
+        if (second.material) damageBlock(second, impactX, impactY, -relativeVelocityX, -relativeVelocityY);
+      });
+    }
+
+    function damageTarget(target, impactSpeed) {
+      if (!target.alive || target.knockedOut || impactSpeed <= 5) return;
+      target.health -= (impactSpeed - 5) * 2;
+      if (target.health <= 0) {
+        target.knockedOut = true;
+        target.knockoutTime = 0;
+        score += 100;
+        setMessage("撞上木架！目标被撞倒 +100 分");
+      }
+    }
+
+    function syncPhysicsObjects() {
+      blocks.forEach(block => {
+        if (!block.alive || !block.body) return;
+        block.x = block.body.position.x - block.w / 2;
+        block.y = block.body.position.y - block.h / 2;
+        block.rotation = block.body.angle;
+        block.vx = block.body.velocity.x;
+        block.vy = block.body.velocity.y;
+        block.angularVelocity = block.body.angularVelocity;
+      });
+      targets.forEach(target => {
+        if (!target.alive || !target.body) return;
+        target.x = target.body.position.x;
+        target.y = target.body.position.y;
+        target.rotation = target.body.angle;
+        target.vx = target.body.velocity.x;
+        target.vy = target.body.velocity.y;
+        target.angularVelocity = target.body.angularVelocity;
+      });
+    }
+
+    function moveTarget(target, point, velocityX, velocityY) {
+      target.x = point.x;
+      target.y = point.y;
+      target.vx = velocityX;
+      target.vy = velocityY;
+      if (!target.body) return;
+      Matter.Body.setPosition(target.body, point);
+      Matter.Body.setVelocity(target.body, { x: velocityX, y: velocityY });
+    }
+
+    function findObstacleAt(point) {
+      const bumper = [...bumpers].reverse().find(item => Math.hypot(point.x - item.x, point.y - item.y) <= item.radius + 6);
+      if (bumper) return bumper;
+      return [...blocks].reverse().find(block => {
+        if (!block.alive) return false;
+        const centerX = block.x + block.w / 2;
+        const centerY = block.y + block.h / 2;
+        const cosine = Math.cos(block.rotation);
+        const sine = Math.sin(block.rotation);
+        const offsetX = point.x - centerX;
+        const offsetY = point.y - centerY;
+        const localX = offsetX * cosine + offsetY * sine;
+        const localY = -offsetX * sine + offsetY * cosine;
+        return Math.abs(localX) <= block.w / 2 + 5 && Math.abs(localY) <= block.h / 2 + 5;
+      });
+    }
+
+    function moveObstacle(obstacle, point) {
+      const centerX = point.x - draggedObstacleOffset.x;
+      const centerY = point.y - draggedObstacleOffset.y;
+      if (obstacle.radius) {
+        obstacle.x = centerX;
+        obstacle.y = centerY;
+      } else {
+        obstacle.x = centerX - obstacle.w / 2;
+        obstacle.y = centerY - obstacle.h / 2;
+        obstacle.vx = 0;
+        obstacle.vy = 0;
+        obstacle.angularVelocity = 0;
+        wakePhysicsBodies();
+      }
+      if (obstacle.body) {
+        Matter.Body.setPosition(obstacle.body, { x: centerX, y: centerY });
+        Matter.Body.setVelocity(obstacle.body, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(obstacle.body, 0);
+      }
+    }
+
+    function wakePhysicsBodies() {
+      [...blocks, ...targets].forEach(object => {
+        if (object.alive && object.body && !object.body.isStatic) {
+          Matter.Sleeping.set(object.body, false);
+        }
+      });
+    }
+
+    function resetGame() {
+      physicsAccumulator = 0;
+      score = 0;
+      shots = 0;
+      maxShots = baseShots;
+      dragging = false;
+      draggedTarget = null;
+      draggedTargetPoint = null;
+      draggedObstacle = null;
+      draggedObstacleOffset = null;
+      dragPoint = { ...anchor };
+      projectile = null;
+      debris = [];
+      explosions = [];
+      const level = levels[currentLevel];
+      targets = level.targets.map(([x, y]) => createTarget(x, y));
+      targetTotal = targets.length;
+      blocks = level.blocks.map(([x, y, width, height, color, material]) => createBlock(x, y, width, height, color, material));
+      bumpers = level.bumpers.map(([x, y, radius]) => ({ x, y, radius, restitution: 1, body: null }));
+      setupPhysicsWorld();
+      levelTitleNode.textContent = level.title;
+      levelDescriptionNode.textContent = level.description;
+      levelSelectNode.value = String(currentLevel);
+      levelProgressNode.textContent = `${currentLevel + 1} / ${levels.length}`;
+      previousLevelButton.disabled = currentLevel === 0;
+      nextLevelButton.disabled = currentLevel === levels.length - 1;
+      renderHud();
+      setMessage("拖动小队成员，松开发射");
+    }
+
+    function changeLevel(index) {
+      currentLevel = Math.max(0, Math.min(levels.length - 1, index));
+      resetGame();
+    }
+
+    function createTarget(x, y) {
+      return { x, y, r: 20, vx: 0, vy: 0, rotation: 0, angularVelocity: 0, health: 34, mass: 1.2, knockedOut: false, knockoutTime: 0, alive: true };
+    }
+
+    function createBlock(x, y, w, h, color, material = "wood") {
+      const durability = { wood: 8, glass: 4, stone: 40 }[material] || 8;
+      return { x, y, w, h, alive: true, color, material, health: durability, maxHealth: durability, freeFall: false, vx: 0, vy: 0, rotation: 0, angularVelocity: 0 };
+    }
+
+    function getBlockBounds(block) {
+      const halfWidth = Math.abs(Math.cos(block.rotation) * block.w / 2) + Math.abs(Math.sin(block.rotation) * block.h / 2);
+      const halfHeight = Math.abs(Math.sin(block.rotation) * block.w / 2) + Math.abs(Math.cos(block.rotation) * block.h / 2);
+      const centerX = block.x + block.w / 2;
+      const centerY = block.y + block.h / 2;
+      return { left: centerX - halfWidth, right: centerX + halfWidth, top: centerY - halfHeight, bottom: centerY + halfHeight };
+    }
+
+    function segmentIntersectsBounds(startX, startY, endX, endY, bounds) {
+      let minimumTime = 0;
+      let maximumTime = 1;
+      for (const [start, end, minimum, maximum] of [[startX, endX, bounds.left, bounds.right], [startY, endY, bounds.top, bounds.bottom]]) {
+        const distance = end - start;
+        if (Math.abs(distance) < .0001) {
+          if (start < minimum || start > maximum) return false;
+          continue;
+        }
+        let enter = (minimum - start) / distance;
+        let leave = (maximum - start) / distance;
+        if (enter > leave) [enter, leave] = [leave, enter];
+        minimumTime = Math.max(minimumTime, enter);
+        maximumTime = Math.min(maximumTime, leave);
+        if (minimumTime > maximumTime) return false;
+      }
+      return true;
+    }
+
+    function segmentCircleIntersection(startX, startY, endX, endY, centerX, centerY, radius) {
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const lengthSquared = dx * dx + dy * dy;
+      const time = lengthSquared
+        ? Math.max(0, Math.min(1, ((centerX - startX) * dx + (centerY - startY) * dy) / lengthSquared))
+        : 0;
+      const x = startX + dx * time;
+      const y = startY + dy * time;
+      return Math.hypot(centerX - x, centerY - y) <= radius ? { x, y } : null;
+    }
+
+    function segmentCircleEntry(startX, startY, endX, endY, centerX, centerY, radius) {
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const offsetX = startX - centerX;
+      const offsetY = startY - centerY;
+      const a = dx * dx + dy * dy;
+      if (a === 0) return null;
+      const c = offsetX * offsetX + offsetY * offsetY - radius * radius;
+      if (c <= 0) return { x: startX, y: startY, time: 0 };
+      const b = 2 * (offsetX * dx + offsetY * dy);
+      const discriminant = b * b - 4 * a * c;
+      if (discriminant < 0) return null;
+      const time = (-b - Math.sqrt(discriminant)) / (2 * a);
+      if (time < 0 || time > 1) return null;
+      return { x: startX + dx * time, y: startY + dy * time, time };
+    }
+
+    function renderHud() {
+      scoreNode.textContent = String(score).padStart(4, "0");
+      const remaining = targets.filter(target => target.alive && !target.knockedOut).length;
+      targetsNode.textContent = `${remaining} / ${targetTotal}`;
+      ammoNode.replaceChildren();
+      for (let index = 0; index < maxShots; index += 1) {
+        const dot = document.createElement("span");
+        dot.className = `ammo-dot${index < shots ? " used" : ""}`;
+        ammoNode.append(dot);
+      }
+    }
+
+    function resolveTargetBlockCollision(target, block) {
+      const centerX = block.x + block.w / 2;
+      const centerY = block.y + block.h / 2;
+      const cosine = Math.cos(block.rotation);
+      const sine = Math.sin(block.rotation);
+      const offsetX = target.x - centerX;
+      const offsetY = target.y - centerY;
+      const localX = offsetX * cosine + offsetY * sine;
+      const localY = -offsetX * sine + offsetY * cosine;
+      const halfWidth = block.w / 2;
+      const halfHeight = block.h / 2;
+      const closestX = Math.max(-halfWidth, Math.min(localX, halfWidth));
+      const closestY = Math.max(-halfHeight, Math.min(localY, halfHeight));
+      let normalLocalX = localX - closestX;
+      let normalLocalY = localY - closestY;
+      let distance = Math.hypot(normalLocalX, normalLocalY);
+      let penetration;
+      if (distance === 0) {
+        const gapX = halfWidth - Math.abs(localX);
+        const gapY = halfHeight - Math.abs(localY);
+        if (gapX < gapY) {
+          normalLocalX = localX < 0 ? -1 : 1;
+          normalLocalY = 0;
+          penetration = target.r + gapX;
+        } else {
+          normalLocalX = 0;
+          normalLocalY = localY < 0 ? -1 : 1;
+          penetration = target.r + gapY;
+        }
+      } else {
+        if (distance >= target.r) return;
+        normalLocalX /= distance;
+        normalLocalY /= distance;
+        penetration = target.r - distance;
+      }
+      const normalX = normalLocalX * cosine - normalLocalY * sine;
+      const normalY = normalLocalX * sine + normalLocalY * cosine;
+      const contactX = target.x - normalX * target.r;
+      const contactY = target.y - normalY * target.r;
+      target.x += normalX * penetration;
+      target.y += normalY * penetration;
+
+      const relativeX = contactX - centerX;
+      const relativeY = contactY - centerY;
+      const velocityX = target.vx - (block.vx - block.angularVelocity * relativeY);
+      const velocityY = target.vy - (block.vy + block.angularVelocity * relativeX);
+      const normalSpeed = velocityX * normalX + velocityY * normalY;
+      if (normalSpeed >= 0) return;
+      const impact = -normalSpeed;
+      if (impact > 4) block.freeFall = true;
+      const blockMass = block.material === "stone" ? 8 : block.material === "glass" ? 1.2 : 2.8;
+      const inverseTargetMass = 1 / target.mass;
+      const inverseBlockMass = block.freeFall ? 1 / blockMass : 0;
+      const blockInertia = blockMass * (block.w * block.w + block.h * block.h) / 12;
+      const contactArm = relativeX * normalY - relativeY * normalX;
+      const inverseInertia = block.freeFall ? 1 / blockInertia : 0;
+      const impulse = (1 + .25) * impact / (inverseTargetMass + inverseBlockMass + contactArm * contactArm * inverseInertia);
+      target.vx += normalX * impulse * inverseTargetMass;
+      target.vy += normalY * impulse * inverseTargetMass;
+      if (block.freeFall) {
+        block.vx -= normalX * impulse * inverseBlockMass;
+        block.vy -= normalY * impulse * inverseBlockMass;
+        block.angularVelocity -= contactArm * impulse * inverseInertia;
+      }
+      const tangentX = -normalY;
+      const tangentY = normalX;
+      const targetInverseInertia = 2 / (target.mass * target.r * target.r);
+      const blockTangentArm = relativeX * tangentY - relativeY * tangentX;
+      const tangentSpeed = (target.vx - (block.vx - block.angularVelocity * relativeY)) * tangentX
+        + (target.vy - (block.vy + block.angularVelocity * relativeX)) * tangentY;
+      const tangentDenominator = inverseTargetMass + inverseBlockMass
+        + target.r * target.r * targetInverseInertia
+        + blockTangentArm * blockTangentArm * inverseInertia;
+      const tangentImpulse = Math.max(-impulse * .25, Math.min(impulse * .25, -tangentSpeed / tangentDenominator));
+      target.vx += tangentX * tangentImpulse * inverseTargetMass;
+      target.vy += tangentY * tangentImpulse * inverseTargetMass;
+      target.angularVelocity -= target.r * tangentImpulse * targetInverseInertia;
+      if (block.freeFall) {
+        block.vx -= tangentX * tangentImpulse * inverseBlockMass;
+        block.vy -= tangentY * tangentImpulse * inverseBlockMass;
+        block.angularVelocity -= blockTangentArm * tangentImpulse * inverseInertia;
+      }
+      if (!target.knockedOut && impact > 5) {
+        target.health -= (impact - 5) * 2;
+        if (target.health <= 0) {
+          target.knockedOut = true;
+          target.knockoutTime = 0;
+          score += 100;
+          setMessage("撞上木架！目标被撞倒 +100 分");
+        }
+      }
+    }
+
+    function setMessage(text) { messageNode.textContent = text; }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.width * 0.56 * ratio);
+      ctx.setTransform(canvas.width / 1000, 0, 0, canvas.height / 560, 0, 0);
+    }
+
+    function roundedRect(x, y, width, height, radius, fill, stroke) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+
+    function drawBackground() {
+      const sky = ctx.createLinearGradient(0, 0, 0, 500);
+      sky.addColorStop(0, "#9edce7");
+      sky.addColorStop(1, "#e3f1d2");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, 1000, 560);
+      ctx.fillStyle = "#fff8da";
+      ctx.beginPath(); ctx.arc(850, 94, 34, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ffffff70";
+      drawCloud(320, 105, 1); drawCloud(580, 155, .72); drawCloud(120, 190, .58);
+      ctx.fillStyle = "#a8d39d";
+      ctx.beginPath(); ctx.moveTo(0, 405); ctx.quadraticCurveTo(180, 300, 370, 410); ctx.quadraticCurveTo(610, 315, 1000, 405); ctx.lineTo(1000, 500); ctx.lineTo(0, 500); ctx.fill();
+      ctx.fillStyle = "#8abc80";
+      ctx.beginPath(); ctx.moveTo(0, 440); ctx.quadraticCurveTo(240, 360, 500, 440); ctx.quadraticCurveTo(760, 350, 1000, 430); ctx.lineTo(1000, 500); ctx.lineTo(0, 500); ctx.fill();
+      ctx.fillStyle = "#f5d888";
+      ctx.fillRect(0, floorY, 1000, 86);
+      ctx.fillStyle = "#dfbd6b";
+      ctx.fillRect(0, floorY, 1000, 7);
+      for (let x = 16; x < 1000; x += 31) {
+        ctx.fillStyle = x % 2 ? "#e9cb7b" : "#edcf81";
+        ctx.fillRect(x, 493 + (x % 3) * 3, 13, 3);
+      }
+    }
+
+    function drawCloud(x, y, scale) {
+      ctx.beginPath();
+      ctx.arc(x, y, 19 * scale, Math.PI, 0);
+      ctx.arc(x + 22 * scale, y - 10 * scale, 25 * scale, Math.PI, 0);
+      ctx.arc(x + 49 * scale, y, 17 * scale, Math.PI, 0);
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawSlingshot() {
+      ctx.lineCap = "round";
+      ctx.lineWidth = 18;
+      ctx.strokeStyle = "#755038";
+      ctx.beginPath(); ctx.moveTo(190, 469); ctx.lineTo(201, 351); ctx.lineTo(185, 319); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(201, 351); ctx.lineTo(222, 319); ctx.stroke();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#bd7556";
+      const pouch = dragging ? dragPoint : anchor;
+      ctx.beginPath(); ctx.moveTo(185, 319); ctx.lineTo(pouch.x, pouch.y); ctx.lineTo(222, 319); ctx.stroke();
+      ctx.fillStyle = "#79533c";
+      ctx.beginPath(); ctx.ellipse(193, 465, 34, 8, 0, 0, Math.PI * 2); ctx.fill();
+      if (!projectile || !projectile.launched) drawBird(pouch.x, pouch.y, 21);
+      if (dragging) drawAimGuide();
+    }
+
+    function drawAimGuide() {
+      const dx = anchor.x - dragPoint.x;
+      const dy = anchor.y - dragPoint.y;
+      const vx = dx * .19;
+      const vy = dy * .19;
+      ctx.fillStyle = "#ffffffb5";
+      for (let index = 1; index <= 7; index += 1) {
+        const time = index * 4;
+        const x = anchor.x + vx * time;
+        const y = anchor.y + vy * time + .5 * .31 * time * time;
+        if (x > 970 || y > floorY) break;
+        ctx.beginPath(); ctx.arc(x, y, Math.max(2, 5 - index * .45), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    function drawBird(x, y, radius) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#e87859";
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f4b35f";
+      ctx.beginPath(); ctx.ellipse(-6, 8, 9, 6, -.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff9e9";
+      ctx.beginPath(); ctx.arc(7, -6, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#263a36";
+      ctx.beginPath(); ctx.arc(9, -6, 2.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f3c95d";
+      ctx.beginPath(); ctx.moveTo(15, 1); ctx.lineTo(29, 5); ctx.lineTo(15, 9); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+
+    function drawTarget(target) {
+      ctx.save(); ctx.translate(target.x, target.y); ctx.rotate(target.rotation);
+      ctx.fillStyle = "#72a75b";
+      ctx.beginPath(); ctx.arc(0, 0, target.r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#9bc879";
+      ctx.beginPath(); ctx.arc(-5, -7, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff8e8";
+      ctx.beginPath(); ctx.arc(-6, -3, 4, 0, Math.PI * 2); ctx.arc(7, -3, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#263a36";
+      ctx.beginPath(); ctx.arc(-5, -3, 1.8, 0, Math.PI * 2); ctx.arc(8, -3, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#355a42"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(1, 5, 5, .2, Math.PI - .2); ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBlock(block) {
+      if (!block.alive) return;
+      ctx.save();
+      ctx.translate(block.x + block.w / 2, block.y + block.h / 2);
+      ctx.rotate(block.rotation);
+      const border = block.material === "stone" ? "#59686a" : block.material === "glass" ? "#5799a3" : "#895d3e";
+      const detail = block.material === "stone" ? "#c4ceca" : block.material === "glass" ? "#e4ffff" : "#f4d29c";
+      roundedRect(-block.w / 2, -block.h / 2, block.w, block.h, 4, block.color, border);
+      ctx.strokeStyle = detail; ctx.lineWidth = 2;
+      if (block.material === "stone") {
+        ctx.beginPath(); ctx.moveTo(-block.w / 2 + 5, 0); ctx.lineTo(block.w / 2 - 5, 0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -block.h / 2 + 4); ctx.lineTo(0, 0); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.moveTo(-block.w / 2 + 5, -block.h / 2 + 8); ctx.lineTo(block.w / 2 - 5, -block.h / 2 + 8); ctx.stroke();
+        if (block.h > 32) {
+          ctx.beginPath(); ctx.moveTo(-block.w / 2 + 6, block.h / 2 - 10); ctx.lineTo(block.w / 2 - 6, block.h / 2 - 10); ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawBumper(bumper) {
+      ctx.save();
+      ctx.translate(bumper.x, bumper.y);
+      ctx.fillStyle = "#244f5a";
+      ctx.beginPath(); ctx.arc(0, 0, bumper.radius + 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f3c95d";
+      ctx.beginPath(); ctx.arc(0, 0, bumper.radius, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#57b5c2";
+      ctx.beginPath(); ctx.arc(0, 0, bumper.radius - 6, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#eaffff";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, 0, bumper.radius - 11, -.8, Math.PI * 1.15); ctx.stroke();
+      ctx.fillStyle = "#fffdf5";
+      ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      drawBackground();
+      drawSlingshot();
+      bumpers.forEach(drawBumper);
+      blocks.forEach(drawBlock);
+      targets.forEach(target => { if (target.alive) drawTarget(target); });
+      if (projectile && projectile.launched) drawBird(projectile.x, projectile.y, projectileRadius);
+      debris.forEach(piece => {
+        ctx.save(); ctx.translate(piece.x, piece.y); ctx.rotate(piece.rotation);
+        ctx.fillStyle = piece.color; ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size);
+        ctx.restore();
+      });
+      explosions.forEach(explosion => {
+        const progress = explosion.age / explosion.duration;
+        const radius = 12 + progress * 42;
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = "#f3c95d";
+        ctx.beginPath(); ctx.arc(explosion.x, explosion.y, radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#e87859"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(explosion.x, explosion.y, radius + 8, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      });
+      requestAnimationFrame(draw);
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (event.clientX - rect.left) * 1000 / rect.width, y: (event.clientY - rect.top) * 560 / rect.height };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const point = pointerPosition(event);
+      const debugOpen = document.querySelector("#debug-panel").classList.contains("open");
+      const target = [...targets].reverse().find(item => item.alive && Math.hypot(point.x - item.x, point.y - item.y) < item.r + 10);
+      if (debugOpen && target) {
+        draggedTarget = target;
+        draggedTargetPoint = point;
+        canvas.setPointerCapture(event.pointerId);
+        event.preventDefault();
+        return;
+      }
+      const obstacle = findObstacleAt(point);
+      if (obstacle) {
+        draggedObstacle = obstacle;
+        const centerX = obstacle.radius ? obstacle.x : obstacle.x + obstacle.w / 2;
+        const centerY = obstacle.radius ? obstacle.y : obstacle.y + obstacle.h / 2;
+        draggedObstacleOffset = { x: point.x - centerX, y: point.y - centerY };
+        canvas.setPointerCapture(event.pointerId);
+        event.preventDefault();
+        return;
+      }
+      const birdPoint = projectile && !projectile.launched ? dragPoint : anchor;
+      if (shots < maxShots && (!projectile || !projectile.launched) && Math.hypot(point.x - birdPoint.x, point.y - birdPoint.y) < 36) {
+        dragging = true;
+        canvas.setPointerCapture(event.pointerId);
+        dragPoint = point;
+        event.preventDefault();
+      }
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (draggedObstacle) {
+        moveObstacle(draggedObstacle, pointerPosition(event));
+        return;
+      }
+      if (draggedTarget) {
+        const point = pointerPosition(event);
+        const velocityX = (point.x - draggedTargetPoint.x) * .8;
+        const velocityY = (point.y - draggedTargetPoint.y) * .8;
+        moveTarget(draggedTarget, point, velocityX, velocityY);
+        draggedTargetPoint = point;
+        return;
+      }
+      if (!dragging) return;
+      const point = pointerPosition(event);
+      const dx = point.x - anchor.x;
+      const dy = point.y - anchor.y;
+      const distance = Math.hypot(dx, dy);
+      const limit = 82;
+      const scale = distance > limit ? limit / distance : 1;
+      dragPoint = { x: anchor.x + dx * scale, y: anchor.y + dy * scale };
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      if (draggedObstacle) {
+        draggedObstacle = null;
+        draggedObstacleOffset = null;
+        return;
+      }
+      if (draggedTarget) {
+        draggedTarget = null;
+        draggedTargetPoint = null;
+        return;
+      }
+      if (!dragging) return;
+      dragging = false;
+      const dx = anchor.x - dragPoint.x;
+      const dy = anchor.y - dragPoint.y;
+      const speed = Math.hypot(dx, dy) * .19;
+      if (speed > 2) {
+        shots += 1;
+        projectile = { x: anchor.x, y: anchor.y, vx: dx * .19, vy: dy * .19, launched: true, age: 0, hitTargets: new Set(), pathActive: false };
+        renderHud();
+        setMessage("漂亮！继续观察落点");
+        playSound(280, .08);
+      }
+      dragPoint = { ...anchor };
+    });
+
+    canvas.addEventListener("pointercancel", () => { dragging = false; draggedTarget = null; draggedTargetPoint = null; draggedObstacle = null; draggedObstacleOffset = null; dragPoint = { ...anchor }; });
+
+    function breakBlock(block) {
+      if (!block.alive) return;
+      block.alive = false;
+      if (block.body) Matter.Composite.remove(physicsEngine.world, block.body);
+      wakePhysicsBodies();
+      for (let index = 0; index < 5; index += 1) {
+        const colors = block.material === "stone" ? ["#778587", "#acb6b5"] : block.material === "glass" ? ["#8ccbd3", "#d9fbff"] : ["#b97848", "#dba66c"];
+        debris.push({ x: block.x + block.w / 2, y: block.y + block.h / 2, vx: (Math.random() - .5) * 8, vy: -Math.random() * 7 - 2, size: 7 + Math.random() * 9, rotation: Math.random() * 2, spin: (Math.random() - .5) * .15, color: colors[index % 2] });
+      }
+      score += 50;
+      playSound(160, .1);
+    }
+
+    function damageBlock(block, impactX, impactY, velocityX, velocityY) {
+      if (!block.alive) return;
+      const speed = Math.hypot(velocityX, velocityY);
+      if (speed < 2) return;
+      const mass = block.material === "stone" ? 8 : block.material === "glass" ? 1.2 : 2.8;
+      const impulseScale = block.material === "stone" ? .07 : .16;
+      const centerX = block.x + block.w / 2;
+      const centerY = block.y + block.h / 2;
+      if (block.body) {
+        wakePhysicsBodies();
+        Matter.Body.setVelocity(block.body, {
+          x: block.body.velocity.x + velocityX * impulseScale,
+          y: block.body.velocity.y + velocityY * impulseScale
+        });
+        Matter.Body.setAngularVelocity(block.body, block.body.angularVelocity
+          + ((impactX - centerX) * velocityY - (impactY - centerY) * velocityX) * .0015 / mass);
+      }
+      if (speed > 4) block.freeFall = true;
+      const damageScale = block.material === "stone" ? .12 : block.material === "glass" ? 1.2 : .9;
+      block.health -= Math.max(0, speed - 2) * damageScale;
+      if (block.health <= 0) breakBlock(block);
+    }
+
+    function explodeTarget(target) {
+      target.alive = false;
+      target.knockedOut = true;
+      if (target.body) Matter.Composite.remove(physicsEngine.world, target.body);
+      explosions.push({ x: target.x, y: target.y, age: 0, duration: 28 });
+      for (let index = 0; index < 10; index += 1) {
+        debris.push({ x: target.x, y: target.y, vx: (Math.random() - .5) * 11, vy: (Math.random() - .5) * 11 - 2, size: 5 + Math.random() * 7, rotation: Math.random() * 2, spin: (Math.random() - .5) * .2, color: index % 2 ? "#72a75b" : "#e87859" });
+      }
+      score += 100;
+      setMessage("命中爆炸！目标被消灭 +100 分");
+      playSound(620, .16);
+    }
+
+    function separateTargets() {
+      for (let firstIndex = 0; firstIndex < targets.length; firstIndex += 1) {
+        const first = targets[firstIndex];
+        if (!first.alive) continue;
+        for (let secondIndex = firstIndex + 1; secondIndex < targets.length; secondIndex += 1) {
+          const second = targets[secondIndex];
+          if (!second.alive) continue;
+          const dx = second.x - first.x;
+          const dy = second.y - first.y;
+          const distance = Math.hypot(dx, dy);
+          const minimumDistance = first.r + second.r;
+          if (distance >= minimumDistance) continue;
+          const normalX = distance > 0 ? dx / distance : 1;
+          const normalY = distance > 0 ? dy / distance : 0;
+          const firstInverseMass = 1 / first.mass;
+          const secondInverseMass = 1 / second.mass;
+          const inverseMassSum = firstInverseMass + secondInverseMass;
+          const overlap = minimumDistance - distance;
+          first.x -= normalX * overlap * firstInverseMass / inverseMassSum;
+          first.y -= normalY * overlap * firstInverseMass / inverseMassSum;
+          second.x += normalX * overlap * secondInverseMass / inverseMassSum;
+          second.y += normalY * overlap * secondInverseMass / inverseMassSum;
+          const relativeSpeed = (second.vx - first.vx) * normalX + (second.vy - first.vy) * normalY;
+          if (relativeSpeed < 0) {
+            const impulse = -(1 + .35) * relativeSpeed / inverseMassSum;
+            first.vx -= normalX * impulse * firstInverseMass;
+            first.vy -= normalY * impulse * firstInverseMass;
+            second.vx += normalX * impulse * secondInverseMass;
+            second.vy += normalY * impulse * secondInverseMass;
+            const tangentX = -normalY;
+            const tangentY = normalX;
+            const tangentSpeed = (second.vx - first.vx) * tangentX + (second.vy - first.vy) * tangentY;
+            const friction = Math.max(-impulse * .12, Math.min(impulse * .12, -tangentSpeed / inverseMassSum));
+            first.vx -= tangentX * friction * firstInverseMass;
+            first.vy -= tangentY * friction * firstInverseMass;
+            second.vx += tangentX * friction * secondInverseMass;
+            second.vy += tangentY * friction * secondInverseMass;
+            first.angularVelocity -= friction * first.r / (first.mass * first.r * first.r * .5);
+            second.angularVelocity -= friction * second.r / (second.mass * second.r * second.r * .5);
+          }
+        }
+      }
+    }
+
+    function clampBlockToFloor(block) {
+      const bounds = getBlockBounds(block);
+      if (bounds.bottom <= floorY) return;
+      block.y -= bounds.bottom - floorY;
+      if (block.vy > 0) block.vy = 0;
+    }
+
+    function updateBlockSupportStates() {
+      blocks.forEach(block => {
+        if (!block.alive) return;
+        const bounds = getBlockBounds(block);
+        if (bounds.bottom >= floorY - 2) {
+          block.freeFall = false;
+          if (block.h > block.w * 1.5) {
+            block.rotation = 0;
+            block.angularVelocity = 0;
+          }
+          return;
+        }
+        const supports = blocks.filter(other => {
+          if (!other.alive || other === block) return false;
+          const otherBounds = getBlockBounds(other);
+          const overlap = Math.min(bounds.right, otherBounds.right) - Math.max(bounds.left, otherBounds.left);
+          const gap = otherBounds.top - bounds.bottom;
+          return overlap > 0 && gap >= -2 && gap < 8;
+        });
+        const supportWidth = supports.reduce((width, support) => {
+          const supportBounds = getBlockBounds(support);
+          return width + Math.max(0, Math.min(bounds.right, supportBounds.right) - Math.max(bounds.left, supportBounds.left));
+        }, 0);
+        const stableSupport = supports.length >= 2 || supportWidth >= bounds.right - bounds.left;
+        if (!stableSupport) {
+          if (!block.freeFall) block.vy += 1.2;
+          block.freeFall = true;
+          if (supports.length) {
+            const slideDirection = block.x < supports[0].x ? -1 : 1;
+            block.vx += slideDirection * .08;
+            block.angularVelocity += slideDirection * .012;
+          }
+        } else {
+          block.freeFall = false;
+        }
+      });
+    }
+
+    function resolveBlockCollisions() {
+      for (let iteration = 0; iteration < 8; iteration += 1) {
+        for (let firstIndex = 0; firstIndex < blocks.length; firstIndex += 1) {
+          const first = blocks[firstIndex];
+          if (!first.alive) continue;
+          for (let secondIndex = firstIndex + 1; secondIndex < blocks.length; secondIndex += 1) {
+            const second = blocks[secondIndex];
+            if (!second.alive) continue;
+            const firstBounds = getBlockBounds(first);
+            const secondBounds = getBlockBounds(second);
+            const overlapX = Math.min(firstBounds.right, secondBounds.right) - Math.max(firstBounds.left, secondBounds.left);
+            const overlapY = Math.min(firstBounds.bottom, secondBounds.bottom) - Math.max(firstBounds.top, secondBounds.top);
+            if (overlapX <= 0 || overlapY <= 0) continue;
+            if (overlapX < overlapY) {
+              const direction = firstBounds.left + firstBounds.right < secondBounds.left + secondBounds.right ? -1 : 1;
+              first.x += direction * overlapX / 2;
+              second.x -= direction * overlapX / 2;
+              const normalX = direction === -1 ? 1 : -1;
+              const relativeSpeed = (second.vx - first.vx) * normalX;
+              if (relativeSpeed < 0) {
+                const sharedNormalVelocity = (first.vx + second.vx) / 2;
+                first.vx += (sharedNormalVelocity - first.vx) * normalX * normalX;
+                second.vx += (sharedNormalVelocity - second.vx) * normalX * normalX;
+              }
+              const sharedVelocity = (first.vy + second.vy) / 2;
+              first.vy = first.vy * .85 + sharedVelocity * .15;
+              second.vy = second.vy * .85 + sharedVelocity * .15;
+            } else {
+              const direction = firstBounds.top + firstBounds.bottom < secondBounds.top + secondBounds.bottom ? -1 : 1;
+              const firstOnFloor = firstBounds.bottom >= floorY - 1;
+              const secondOnFloor = secondBounds.bottom >= floorY - 1;
+              if (direction === -1 && secondOnFloor) {
+                first.y -= overlapY;
+                if (!first.freeFall) first.vy = Math.min(first.vy, second.vy);
+              } else if (direction === 1 && firstOnFloor) {
+                second.y -= overlapY;
+                if (!second.freeFall) second.vy = Math.min(second.vy, first.vy);
+              } else {
+                first.y += direction * overlapY / 2;
+                second.y -= direction * overlapY / 2;
+              }
+              const fallingBlock = direction === -1 ? first : second;
+              const supportBlock = direction === -1 ? second : first;
+              if (fallingBlock.freeFall) {
+                const slideDirection = fallingBlock.x < supportBlock.x ? -1 : 1;
+                fallingBlock.vx += slideDirection * .05;
+                fallingBlock.angularVelocity += slideDirection * .008;
+              }
+              const normalY = direction === -1 ? 1 : -1;
+              const relativeSpeed = (second.vy - first.vy) * normalY;
+              if (relativeSpeed < 0) {
+                const sharedNormalVelocity = (first.vy + second.vy) / 2;
+                first.vy += (sharedNormalVelocity - first.vy) * normalY * normalY;
+                second.vy += (sharedNormalVelocity - second.vy) * normalY * normalY;
+              }
+              const sharedVelocity = (first.vx + second.vx) / 2;
+              first.vx = first.vx * .88 + sharedVelocity * .12;
+              second.vx = second.vx * .88 + sharedVelocity * .12;
+            }
+          }
+        }
+      }
+      blocks.forEach(block => { if (block.alive) clampBlockToFloor(block); });
+    }
+
+    function updateBlocks(step) {
+      const subStep = step / 10;
+      for (let subStepIndex = 0; subStepIndex < 10; subStepIndex += 1) {
+        blocks.forEach(block => {
+          if (!block.alive) return;
+          block.vy += .3 * subStep;
+          block.x += block.vx * subStep;
+          block.y += block.vy * subStep;
+          block.angularVelocity = Math.max(-.12, Math.min(.12, block.angularVelocity));
+          block.rotation += block.angularVelocity * subStep;
+          block.rotation = Math.max(-1.05, Math.min(1.05, block.rotation));
+          const bounds = getBlockBounds(block);
+          if (bounds.bottom > floorY) {
+            const impactVelocity = block.vy;
+            clampBlockToFloor(block);
+            block.vy = impactVelocity > 1.2 ? -impactVelocity * .22 : 0;
+            block.angularVelocity -= Math.sin(block.rotation) * .018 * subStep;
+            block.vx *= .94;
+            block.angularVelocity *= .86;
+          }
+          block.vx *= .99;
+          block.angularVelocity *= .92;
+          if (Math.abs(block.angularVelocity) < .0015 && Math.abs(block.rotation) < .015) {
+            block.angularVelocity = 0;
+            block.rotation = 0;
+          }
+        });
+        resolveBlockCollisions();
+        updateBlockSupportStates();
+      }
+    }
+
+    function update(delta) {
+      const step = Math.min(delta / 16.67, 2);
+      physicsAccumulator += Math.min(delta || 16.67, 50);
+      while (physicsAccumulator >= physicsStep) {
+        Matter.Engine.update(physicsEngine, physicsStep);
+        physicsAccumulator -= physicsStep;
+      }
+      syncPhysicsObjects();
+      if (projectile && projectile.launched) {
+        projectile.age += step;
+        const previousProjectileX = projectile.x;
+        const previousProjectileY = projectile.y;
+        projectile.vy += .31 * step;
+        projectile.x += projectile.vx * step;
+        projectile.y += projectile.vy * step;
+        let collisionStartX = previousProjectileX;
+        let collisionStartY = previousProjectileY;
+        for (const bumper of bumpers) {
+          const hitPoint = segmentCircleEntry(
+            collisionStartX,
+            collisionStartY,
+            projectile.x,
+            projectile.y,
+            bumper.x,
+            bumper.y,
+            bumper.radius + projectileRadius
+          );
+          if (!hitPoint) continue;
+          const normalX = hitPoint.x - bumper.x;
+          const normalY = hitPoint.y - bumper.y;
+          const normalLength = Math.hypot(normalX, normalY) || 1;
+          const unitNormalX = normalX / normalLength;
+          const unitNormalY = normalY / normalLength;
+          const incomingSpeed = projectile.vx * unitNormalX + projectile.vy * unitNormalY;
+          if (incomingSpeed >= 0) continue;
+          projectile.vx -= (1 + bumper.restitution) * incomingSpeed * unitNormalX;
+          projectile.vy -= (1 + bumper.restitution) * incomingSpeed * unitNormalY;
+          projectile.x = hitPoint.x + unitNormalX * (bumper.radius + projectileRadius + 1);
+          projectile.y = hitPoint.y + unitNormalY * (bumper.radius + projectileRadius + 1);
+          projectile.x += projectile.vx * step * (1 - hitPoint.time);
+          projectile.y += projectile.vy * step * (1 - hitPoint.time);
+          collisionStartX = hitPoint.x;
+          collisionStartY = hitPoint.y;
+          setMessage("撞上弹力障碍，反弹！");
+          playSound(520, .12);
+          break;
+        }
+        for (const target of targets) {
+          if (!target.alive || target.knockedOut || projectile.hitTargets.has(target)) continue;
+          const hitPoint = segmentCircleIntersection(collisionStartX, collisionStartY, projectile.x, projectile.y, target.x, target.y, target.r + projectileRadius);
+          if (hitPoint) {
+            projectile.hitTargets.add(target);
+            projectile.vx *= -.18;
+            projectile.vy *= -.18;
+            explodeTarget(target);
+          }
+        }
+        for (const block of blocks) {
+          if (!block.alive) continue;
+          const bounds = getBlockBounds(block);
+          const expandedBounds = { left: bounds.left - projectileRadius, right: bounds.right + projectileRadius, top: bounds.top - projectileRadius, bottom: bounds.bottom + projectileRadius };
+          if (segmentIntersectsBounds(collisionStartX, collisionStartY, projectile.x, projectile.y, expandedBounds)) {
+            damageBlock(block, projectile.x, projectile.y, projectile.vx, projectile.vy);
+            projectile.vx *= -.38;
+            projectile.vy *= -.45;
+            projectile.x += projectile.vx * step;
+            projectile.y += projectile.vy * step;
+          }
+        }
+        if (projectile.y + projectileRadius > floorY) {
+          projectile.y = floorY - projectileRadius;
+          projectile.vy *= -.28;
+          projectile.vx *= .72;
+          if (Math.abs(projectile.vy) < 1.4) projectile.vy = 0;
+        }
+        if (projectile.age > 140 || projectile.x > 1040 || projectile.y > 570 || Math.hypot(projectile.vx, projectile.vy) < .8) {
+          projectile = null;
+          if (shots >= maxShots) setMessage(targets.some(target => target.alive && !target.knockedOut) ? "弹药用完了，重新开始再挑战！" : "全部命中！太棒了！按重新开始再玩一局");
+          else setMessage(targets.some(target => target.alive && !target.knockedOut) ? "再来一发！拖动小队成员" : "全部命中！太棒了！");
+        }
+      }
+      targets.forEach(target => {
+        if (!target.alive || !target.knockedOut) return;
+        target.knockoutTime += step;
+        if (target.knockoutTime > 150 || target.x < -target.r || target.x > 1020) {
+          target.alive = false;
+          if (target.body) Matter.Composite.remove(physicsEngine.world, target.body);
+        }
+      });
+      debris = debris.filter(piece => piece.y < 600);
+      debris.forEach(piece => { piece.vy += .32 * step; piece.x += piece.vx * step; piece.y += piece.vy * step; piece.rotation += piece.spin * step; });
+      explosions = explosions.filter(explosion => explosion.age < explosion.duration);
+      explosions.forEach(explosion => { explosion.age += step; });
+      renderHud();
+    }
+
+    function playSound(frequency, duration) {
+      if (!soundOn) return;
+      try {
+        audioContext ||= new AudioContext();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = frequency;
+        oscillator.type = "triangle";
+        gain.gain.setValueAtTime(.045, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + duration);
+        oscillator.connect(gain); gain.connect(audioContext.destination);
+        oscillator.start(); oscillator.stop(audioContext.currentTime + duration);
+      } catch { /* 浏览器不支持音频时保持静音即可 */ }
+    }
+
+    function frame(now) {
+      update(now - (lastTime || now));
+      lastTime = now;
+      requestAnimationFrame(frame);
+    }
+
+    document.querySelector("#reset").addEventListener("click", resetGame);
+    levelSelectNode.addEventListener("change", event => changeLevel(Number(event.currentTarget.value)));
+    previousLevelButton.addEventListener("click", () => changeLevel(currentLevel - 1));
+    nextLevelButton.addEventListener("click", () => changeLevel(currentLevel + 1));
+    document.querySelector("#debug-toggle").addEventListener("click", event => {
+      const panel = document.querySelector("#debug-panel");
+      const isOpen = panel.classList.toggle("open");
+      event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+    });
+    document.querySelector("#add-ammo").addEventListener("click", () => {
+      const amount = Math.max(1, Math.min(99, Number.parseInt(document.querySelector("#debug-amount").value, 10) || 1));
+      maxShots += amount;
+      renderHud();
+      setMessage(`调试：增加 ${amount} 发弹药`);
+    });
+    document.querySelector("#add-targets").addEventListener("click", () => {
+      const amount = Math.max(1, Math.min(99, Number.parseInt(document.querySelector("#debug-amount").value, 10) || 1));
+      for (let index = 0; index < amount; index += 1) {
+        const column = targets.length % 4;
+        const row = Math.floor(targets.length / 4);
+          const target = createTarget(830 + column * 46, 120 + row * 48);
+          targets.push(target);
+          Matter.Composite.add(physicsEngine.world, attachTargetBody(target));
+        }
+      targetTotal += amount;
+      renderHud();
+      setMessage(`调试：增加 ${amount} 只小猪`);
+    });
+    document.querySelector("#sound-button").addEventListener("click", event => {
+      soundOn = !soundOn;
+      event.currentTarget.textContent = soundOn ? "♫" : "♪";
+      event.currentTarget.setAttribute("aria-label", soundOn ? "关闭音效" : "开启音效");
+      if (soundOn) playSound(440, .08);
+    });
+    new ResizeObserver(resizeCanvas).observe(canvas);
+    resizeCanvas();
+    resetGame();
+    requestAnimationFrame(draw);
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
