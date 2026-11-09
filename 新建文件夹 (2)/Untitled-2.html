@@ -50,10 +50,14 @@
     canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; touch-action: none; cursor: crosshair; }
     .toast { position: absolute; top: 16px; left: 50%; max-width: calc(100% - 32px); padding: 9px 14px; border: 1px solid #ffffffb0; border-radius: 999px; color: #254338; background: #fff9e8e8; font-size: 13px; font-weight: 800; text-align: center; transform: translateX(-50%); pointer-events: none; }
     .bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 15px; }
+    .bottom-actions { display: flex; align-items: center; gap: 10px; }
     .ammo { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
     .ammo-dots { display: flex; gap: 5px; }
     .ammo-dot { width: 13px; height: 13px; border: 2px solid #738879; border-radius: 50%; background: var(--coral); }
     .ammo-dot.used { background: transparent; opacity: .45; }
+    .dash-button { min-height: 36px; padding: 0 11px; border: 1px solid #e8b94c; border-radius: 7px; color: #59451a; background: #ffe99b; cursor: pointer; font: inherit; font-size: 12px; font-weight: 900; }
+    .dash-button:hover:not(:disabled) { background: #ffdd67; }
+    .dash-button:disabled { opacity: .5; cursor: default; }
     .reset { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 15px; border: 0; border-radius: 7px; color: #fffdf2; background: var(--green); cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
     .reset:hover { background: #234a3a; }
     .debug-toggle { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--green); background: #fffdf5; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
@@ -124,9 +128,10 @@
       <div class="toast" id="message" aria-live="polite">拖动小队成员，松开发射</div>
     </section>
     <div class="bottom">
-      <div class="footer-note">木、石、玻璃结构会碰撞、倾倒和破碎；拉得越远，发射越有力。</div>
+      <div class="footer-note">红色 TNT 箱会引爆周围结构；飞行中按空格或点⚡可冲刺一次。</div>
       <div class="bottom-actions">
         <div class="ammo" aria-label="剩余弹药"><span>弹药</span><span class="ammo-dots" id="ammo"></span></div>
+        <button class="dash-button" id="dash-button" type="button" disabled title="小鸟飞行时按空格或点击使用">⚡ 空中冲刺</button>
         <button class="debug-toggle" id="debug-toggle" type="button" aria-expanded="false">调试</button>
         <button class="reset" id="reset" type="button"><span aria-hidden="true">↻</span>重新开始</button>
       </div>
@@ -139,6 +144,7 @@
     const scoreNode = document.querySelector("#score");
     const targetsNode = document.querySelector("#targets");
     const ammoNode = document.querySelector("#ammo");
+    const dashButton = document.querySelector("#dash-button");
     const messageNode = document.querySelector("#message");
     const levelTitleNode = document.querySelector("#level-title");
     const levelDescriptionNode = document.querySelector("#level-description");
@@ -187,7 +193,8 @@
           [711, 324, 39, 54, "#b97848"],
           [711, 306, 39, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[460, 360, 28]]
+        bumpers: [[460, 360, 28]],
+        explosives: [[604, 438, 34, 36]]
       },
       {
         title: "第二关 / 双塔回弹",
@@ -203,7 +210,8 @@
           [748, 324, 28, 54, "#b97848"],
           [684, 306, 92, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[500, 300, 30]]
+        bumpers: [[500, 300, 30]],
+        explosives: [[604, 438, 34, 36]]
       },
       {
         title: "第三关 / 高塔挑战",
@@ -222,7 +230,8 @@
           [752, 252, 24, 54, "#c78b52"],
           [716, 234, 60, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[525, 285, 32]]
+        bumpers: [[525, 285, 32]],
+        explosives: [[614, 438, 34, 36]]
       }
     ];
 
@@ -410,7 +419,10 @@
       const level = levels[currentLevel];
       targets = level.targets.map(([x, y]) => createTarget(x, y));
       targetTotal = targets.length;
-      blocks = level.blocks.map(([x, y, width, height, color, material]) => createBlock(x, y, width, height, color, material));
+      blocks = [
+        ...level.blocks.map(([x, y, width, height, color, material]) => createBlock(x, y, width, height, color, material)),
+        ...level.explosives.map(([x, y, width, height]) => createBlock(x, y, width, height, "#d94e3d", "explosive"))
+      ];
       bumpers = level.bumpers.map(([x, y, radius]) => ({ x, y, radius, restitution: 1, body: null }));
       setupPhysicsWorld();
       levelTitleNode.textContent = level.title;
@@ -503,6 +515,37 @@
         dot.className = `ammo-dot${index < shots ? " used" : ""}`;
         ammoNode.append(dot);
       }
+      dashButton.disabled = !projectile || !projectile.launched || projectile.dashUsed;
+      dashButton.textContent = projectile && projectile.dashUsed ? "✓ 已冲刺" : "⚡ 空中冲刺";
+    }
+
+    function useDash() {
+      if (!projectile || !projectile.launched || projectile.dashUsed) return;
+      if (projectile.pathActive && projectile.evaluate) {
+        const derivativeStep = .01;
+        const before = projectile.evaluate(projectile.pathX - derivativeStep);
+        const after = projectile.evaluate(projectile.pathX + derivativeStep);
+        const slope = Number.isFinite(before) && Number.isFinite(after)
+          ? (after - before) / (derivativeStep * 2)
+          : 0;
+        const directionLength = Math.hypot(1, slope) || 1;
+        projectile.vx = 5 * (1 / directionLength);
+        projectile.vy = 5 * (slope / directionLength);
+        projectile.pathActive = false;
+      }
+      const speed = Math.hypot(projectile.vx, projectile.vy);
+      if (speed < .01) {
+        setMessage("小鸟还没开始飞，暂时无法冲刺");
+        return;
+      }
+      const boost = Math.min(9, Math.max(0, 22 - speed));
+      projectile.vx += projectile.vx / speed * boost;
+      projectile.vy += projectile.vy / speed * boost;
+      projectile.dashUsed = true;
+      projectile.dashFlash = 12;
+      setMessage("空中冲刺！⚡");
+      playSound(760, .14);
+      renderHud();
     }
 
     function resolveTargetBlockCollision(target, block) {
@@ -715,9 +758,21 @@
       ctx.save();
       ctx.translate(block.x + block.w / 2, block.y + block.h / 2);
       ctx.rotate(block.rotation);
-      const border = block.material === "stone" ? "#59686a" : block.material === "glass" ? "#5799a3" : "#895d3e";
-      const detail = block.material === "stone" ? "#c4ceca" : block.material === "glass" ? "#e4ffff" : "#f4d29c";
+      const border = block.material === "explosive" ? "#8f2f28" : block.material === "stone" ? "#59686a" : block.material === "glass" ? "#5799a3" : "#895d3e";
+      const detail = block.material === "explosive" ? "#ffd972" : block.material === "stone" ? "#c4ceca" : block.material === "glass" ? "#e4ffff" : "#f4d29c";
       roundedRect(-block.w / 2, -block.h / 2, block.w, block.h, 4, block.color, border);
+      if (block.material === "explosive") {
+        ctx.fillStyle = "#ffd972";
+        ctx.fillRect(-block.w / 2 + 3, -block.h / 2 + 6, block.w - 6, 4);
+        ctx.fillRect(-block.w / 2 + 3, block.h / 2 - 10, block.w - 6, 4);
+        ctx.fillStyle = "#fff8e8";
+        ctx.font = "bold 13px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("TNT", 0, 0);
+        ctx.restore();
+        return;
+      }
       ctx.strokeStyle = detail; ctx.lineWidth = 2;
       if (block.material === "stone") {
         ctx.beginPath(); ctx.moveTo(-block.w / 2 + 5, 0); ctx.lineTo(block.w / 2 - 5, 0); ctx.stroke();
@@ -754,7 +809,19 @@
       bumpers.forEach(drawBumper);
       blocks.forEach(drawBlock);
       targets.forEach(target => { if (target.alive) drawTarget(target); });
-      if (projectile && projectile.launched) drawBird(projectile.x, projectile.y, projectileRadius);
+      if (projectile && projectile.launched) {
+        if (projectile.dashFlash > 0) {
+          ctx.save();
+          ctx.globalAlpha = projectile.dashFlash / 12;
+          ctx.strokeStyle = "#fff1a8";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(projectile.x, projectile.y, projectileRadius + 10 + (12 - projectile.dashFlash) * 1.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        drawBird(projectile.x, projectile.y, projectileRadius);
+      }
       debris.forEach(piece => {
         ctx.save(); ctx.translate(piece.x, piece.y); ctx.rotate(piece.rotation);
         ctx.fillStyle = piece.color; ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size);
@@ -762,11 +829,13 @@
       });
       explosions.forEach(explosion => {
         const progress = explosion.age / explosion.duration;
-        const radius = 12 + progress * 42;
+        const radius = explosion.maxRadius
+          ? explosion.maxRadius * progress
+          : 12 + progress * 42;
         ctx.globalAlpha = 1 - progress;
-        ctx.fillStyle = "#f3c95d";
+        ctx.fillStyle = explosion.type === "blast" ? "#f3a43b" : "#f3c95d";
         ctx.beginPath(); ctx.arc(explosion.x, explosion.y, radius, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#e87859"; ctx.lineWidth = 5;
+        ctx.strokeStyle = explosion.type === "blast" ? "#d94e3d" : "#e87859"; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.arc(explosion.x, explosion.y, radius + 8, 0, Math.PI * 2); ctx.stroke();
         ctx.globalAlpha = 1;
       });
@@ -849,7 +918,7 @@
       const speed = Math.hypot(dx, dy) * .19;
       if (speed > 2) {
         shots += 1;
-        projectile = { x: anchor.x, y: anchor.y, vx: dx * .19, vy: dy * .19, launched: true, age: 0, hitTargets: new Set(), pathActive: false };
+        projectile = { x: anchor.x, y: anchor.y, vx: dx * .19, vy: dy * .19, launched: true, age: 0, hitTargets: new Set(), pathActive: false, dashUsed: false };
         renderHud();
         setMessage("漂亮！继续观察落点");
         playSound(280, .08);
@@ -876,6 +945,10 @@
       if (!block.alive) return;
       const speed = Math.hypot(velocityX, velocityY);
       if (speed < 2) return;
+      if (block.material === "explosive") {
+        detonateExplosive(block);
+        return;
+      }
       const mass = block.material === "stone" ? 8 : block.material === "glass" ? 1.2 : 2.8;
       const impulseScale = block.material === "stone" ? .07 : .16;
       const centerX = block.x + block.w / 2;
@@ -893,6 +966,71 @@
       const damageScale = block.material === "stone" ? .12 : block.material === "glass" ? 1.2 : .9;
       block.health -= Math.max(0, speed - 2) * damageScale;
       if (block.health <= 0) breakBlock(block);
+    }
+
+    function detonateExplosive(crate) {
+      if (!crate.alive || crate.exploded) return;
+      crate.exploded = true;
+      crate.alive = false;
+      if (crate.body) Matter.Composite.remove(physicsEngine.world, crate.body);
+      const centerX = crate.x + crate.w / 2;
+      const centerY = crate.y + crate.h / 2;
+      const radius = 145;
+      explosions.push({ x: centerX, y: centerY, age: 0, duration: 34, maxRadius: radius, type: "blast" });
+      wakePhysicsBodies();
+      targets.forEach(target => {
+        if (!target.alive || target.knockedOut || !target.body) return;
+        const dx = target.x - centerX;
+        const dy = target.y - centerY;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= radius) return;
+        const falloff = 1 - distance / radius;
+        const directionLength = distance || 1;
+        Matter.Sleeping.set(target.body, false);
+        Matter.Body.setVelocity(target.body, {
+          x: target.body.velocity.x + dx / directionLength * falloff * 13,
+          y: target.body.velocity.y + dy / directionLength * falloff * 13 - falloff * 3
+        });
+        damageTarget(target, falloff * 28);
+      });
+      blocks.forEach(block => {
+        if (!block.alive || block === crate) return;
+        const dx = block.x + block.w / 2 - centerX;
+        const dy = block.y + block.h / 2 - centerY;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= radius) return;
+        const falloff = 1 - distance / radius;
+        const directionLength = distance || 1;
+        if (block.material === "explosive") {
+          detonateExplosive(block);
+          return;
+        }
+        if (!block.body) return;
+        Matter.Sleeping.set(block.body, false);
+        Matter.Body.setVelocity(block.body, {
+          x: block.body.velocity.x + dx / directionLength * falloff * 11,
+          y: block.body.velocity.y + dy / directionLength * falloff * 11 - falloff * 2
+        });
+        Matter.Body.setAngularVelocity(block.body, block.body.angularVelocity + (Math.random() - .5) * falloff * .35);
+        block.health -= falloff * (block.material === "stone" ? 9 : 15);
+        if (block.health <= 0) breakBlock(block);
+      });
+      for (let index = 0; index < 18; index += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 3 + Math.random() * 8;
+        debris.push({
+          x: centerX, y: centerY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          size: 5 + Math.random() * 8,
+          rotation: Math.random() * 2,
+          spin: (Math.random() - .5) * .25,
+          color: index % 2 ? "#f3c95d" : "#d94e3d"
+        });
+      }
+      score += 25;
+      setMessage("TNT 连锁爆破！附近结构被震开 +25 分");
+      playSound(110, .3);
     }
 
     function explodeTarget(target) {
@@ -1104,6 +1242,7 @@
       syncPhysicsObjects();
       if (projectile && projectile.launched) {
         projectile.age += step;
+        projectile.dashFlash = Math.max(0, (projectile.dashFlash || 0) - step);
         const previousProjectileX = projectile.x;
         const previousProjectileY = projectile.y;
         projectile.vy += .31 * step;
@@ -1212,6 +1351,13 @@
     }
 
     document.querySelector("#reset").addEventListener("click", resetGame);
+    dashButton.addEventListener("click", useDash);
+    document.addEventListener("keydown", event => {
+      if (event.code !== "Space" || event.repeat || !projectile || !projectile.launched || projectile.dashUsed
+        || event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      event.preventDefault();
+      useDash();
+    });
     levelSelectNode.addEventListener("change", event => changeLevel(Number(event.currentTarget.value)));
     previousLevelButton.addEventListener("click", () => changeLevel(currentLevel - 1));
     nextLevelButton.addEventListener("click", () => changeLevel(currentLevel + 1));
