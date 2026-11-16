@@ -39,16 +39,28 @@
     h1 { margin: 0; font-size: clamp(28px, 5vw, 43px); line-height: 1.06; letter-spacing: 0; }
     .subtitle { margin: 9px 0 0; color: var(--muted); font-size: 14px; }
     .hint { flex: none; padding: 9px 12px; border-radius: 6px; color: #5b5c41; background: #f0e6bd; font-size: 12px; font-weight: 700; }
-    .level-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fffdf5; }
-    .level-controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
-    .level-controls select { min-width: 180px; padding: 7px 30px 7px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #f8f6e8; font: inherit; font-size: 12px; font-weight: 700; }
-    .level-button { min-height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fffdf5; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
+    .level-controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 10px; padding: 3px 8px; border-bottom: 1px solid var(--line); background: transparent; }
+    .level-controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .level-controls select { min-width: 160px; padding: 5px 24px 5px 8px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #f8f6e8; font: inherit; font-size: 11px; font-weight: 700; }
+    .level-button { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fffdf5; cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }
     .level-button:hover:not(:disabled) { border-color: var(--green); background: #edf3dc; }
     .level-button:disabled { opacity: .45; cursor: default; }
-    .level-progress { color: var(--muted); font-size: 12px; font-weight: 800; }
-    .arena { position: relative; overflow: hidden; border: 2px solid #dce6d5; border-radius: 12px; background: #b8e6ed; box-shadow: 0 10px 24px #37563a12; }
+    .level-progress { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .arena { position: relative; overflow: hidden; border: 2px solid #dce6d5; border-radius: 12px 12px 0 0; background: #b8e6ed; box-shadow: 0 10px 24px #37563a12; }
     canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; touch-action: none; cursor: crosshair; }
-    .toast { position: absolute; top: 16px; left: 50%; max-width: calc(100% - 32px); padding: 9px 14px; border: 1px solid #ffffffb0; border-radius: 999px; color: #254338; background: #fff9e8e8; font-size: 13px; font-weight: 800; text-align: center; transform: translateX(-50%); pointer-events: none; }
+    .toast { position: absolute; top: 16px; left: 50%; max-width: calc(100% - 32px); padding: 9px 14px; border: 1px solid #ffffffb0; border-radius: 999px; color: #254338; background: #fff9e8e8; font-size: 13px; font-weight: 800; text-align: center; transform: translateX(-50%); pointer-events: none; transition: opacity .35s ease; z-index: 2; }
+    .toast.fade { opacity: 0; }
+    .result-overlay { position: absolute; inset: 0; display: none; place-items: center; background: #20302f66; z-index: 3; }
+    .result-overlay.open { display: grid; }
+    .result-card { width: min(88%, 390px); padding: 22px 24px; border: 2px solid #fff8e8; border-radius: 16px; background: #fffdf5; text-align: center; box-shadow: 0 12px 32px #1e332c33; }
+    .result-stars { margin: 0 0 6px; color: var(--yellow); font-size: 27px; letter-spacing: .12em; }
+    .result-title { margin: 0 0 8px; color: var(--ink); font-size: 21px; font-weight: 900; }
+    .result-detail { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .result-actions { display: flex; gap: 9px; justify-content: center; }
+    .result-button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 8px; color: #fffdf2; background: var(--coral); cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
+    .result-button:hover { background: #d4623f; }
+    .result-button.secondary { border: 1px solid var(--line); color: var(--green); background: #fffdf5; }
+    .result-button.secondary:hover { background: #edf3dc; }
     .bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 15px; }
     .bottom-actions { display: flex; align-items: center; gap: 10px; }
     .ammo { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -67,13 +79,39 @@
     .debug-panel input { width: 52px; padding: 6px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #fffdf5; font: inherit; text-align: center; }
     .debug-action { padding: 7px 10px; border: 0; border-radius: 5px; color: #fffdf2; background: var(--coral); cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }
     .debug-action:hover { background: #cf6045; }
-    .launch-panel { display: flex; align-items: center; gap: 8px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fffdf5; color: var(--muted); font-size: 12px; font-weight: 800; }
-    .launch-panel label { display: inline-flex; align-items: center; gap: 4px; }
-    .launch-panel input { width: 58px; padding: 7px 6px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #f8f6e8; font: inherit; text-align: center; }
-    .launch-button { min-height: 34px; padding: 0 13px; border: 0; border-radius: 6px; color: #fffdf2; background: var(--green); cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
-    .launch-button:hover { background: #234a3a; }
+    .launch-panel { display: flex; flex-direction: column; gap: 9px; padding: 13px 16px 12px; border: 2px solid #dce6d5; border-top: 0; border-radius: 0 0 12px 12px; background: #fffdf5; }
+    .launch-head { display: flex; align-items: center; gap: 10px; }
+    .launch-label { flex: none; color: var(--green); font-size: 12px; font-weight: 900; letter-spacing: .04em; }
+    .function-input { flex: 1; min-width: 0; height: 46px; padding: 0 14px; border: 1.5px solid #b9cbbb; border-radius: 9px; color: var(--ink); background: #fffef8; font-family: Consolas, "SFMono-Regular", "Courier New", monospace; font-size: 16px; font-weight: 700; }
+    .function-input:focus { outline: 2px solid #eeb79f; outline-offset: 1px; border-color: var(--coral); }
+    .launch-button { flex: none; min-width: 112px; height: 46px; padding: 0 18px; border: 0; border-radius: 9px; color: #fffdf2; background: var(--coral); cursor: pointer; font: inherit; font-size: 15px; font-weight: 900; letter-spacing: .04em; }
+    .launch-button:hover:not(:disabled) { background: #d4623f; }
+    .launch-button:disabled { opacity: .5; cursor: default; }
+    .launch-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .preview-verdict { color: var(--green); font-size: 13px; font-weight: 800; }
+    .preview-verdict.warn { color: #a83f25; }
+    .function-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .function-chip { padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--green); background: #fffef8; cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }
+    .function-chip:hover { border-color: var(--green); background: #edf3dc; }
+    .function-chip.active { border-color: var(--coral); color: #fffdf2; background: var(--coral); }
+    .shot-result { min-height: 17px; color: var(--muted); font-size: 12px; font-weight: 800; }
     .footer-note { color: #859088; font-size: 11px; }
+    .function-chip { display: inline-flex; align-items: center; gap: 5px; }
+    .chip-icon { width: 26px; height: 15px; flex: none; overflow: visible; }
+    .chip-icon path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .coach { position: absolute; z-index: 2; display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1.5px solid #e87859; border-radius: 999px; color: #7b3524; background: #fffdf5; font-size: 12px; font-weight: 800; white-space: nowrap; transform: translate(-50%, -100%); box-shadow: 0 5px 14px #315e4d26; }
+    .coach[hidden] { display: none; }
+    .coach::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 10px; height: 10px; border-right: 1.5px solid #e87859; border-bottom: 1.5px solid #e87859; background: #fffdf5; transform: translateX(-50%) rotate(45deg); }
+    .coach-arrow { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; color: #fffdf5; background: #e87859; font-size: 13px; }
+    .coach-close { width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; color: #9b8a72; background: transparent; cursor: pointer; font: inherit; font-size: 15px; line-height: 1; }
+    .coach-close:hover { color: #7b3524; background: #f3e8d4; }
+    .tune-bar { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding-top: 2px; }
+    .tune-bar[hidden] { display: none; }
+    .tune-label { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .tune-button { padding: 5px 10px; border: 1px solid #e8cfa9; border-radius: 999px; color: #6a4f1e; background: #fff6df; cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }
+    .tune-button:hover { border-color: #d8a44e; background: #ffedb8; }
     @media (max-width: 620px) {
+      .coach { padding: 6px 8px; font-size: 11px; }
       .page { width: min(100% - 24px, 520px); padding-top: 12px; }
       .topbar { align-items: flex-start; }
       .brand { font-size: 12px; }
@@ -93,7 +131,12 @@
       .bottom { align-items: flex-start; flex-direction: column; gap: 11px; }
       .bottom-actions { display: flex; width: 100%; justify-content: space-between; align-items: center; }
       .debug-panel { align-items: flex-start; flex-wrap: wrap; justify-content: flex-start; }
-      .launch-panel { align-items: flex-start; flex-wrap: wrap; }
+      .launch-panel { padding: 11px 12px; }
+      .launch-head { flex-wrap: wrap; gap: 8px; }
+      .launch-label { width: 100%; }
+      .function-input { flex: 1 1 55%; font-size: 14px; }
+      .launch-button { min-width: 88px; height: 42px; font-size: 13px; }
+      .result-card { padding: 16px; }
     }
   </style>
 </head>
@@ -108,20 +151,22 @@
       </div>
     </header>
     <section class="intro">
-      <div><p class="kicker" id="level-title">第一关 / 木箱练习</p><h1>输入函数，沿线前进！</h1><p class="subtitle" id="level-description">以小鸟为原点输入函数，鸟会持续沿曲线飞行直到出界。</p></div>
-      <div class="hint">拖动障碍物调整布局 · 例如 y=4x、y=x^2</div>
+      <div><p class="kicker" id="level-title">第一关 / 木箱练习</p><h1>拖出一条线，让小鸟沿线飞！</h1><p class="subtitle" id="level-description">拖动圆点让虚线穿过小猪；顺路穿过金色能量环，可以多拿一发弹药。</p></div>
+      <div class="hint">拖圆点改轨迹 · 橙色点线预演坠落、箭头预演反弹 · 光门只走中间的缝</div>
     </section>
     <div class="level-controls" aria-label="关卡选择">
       <button class="level-button" id="previous-level" type="button">上一关</button>
       <label for="level-select">选择关卡
         <select id="level-select">
           <option value="0">第一关 / 木箱练习</option>
-          <option value="1">第二关 / 双塔回弹</option>
-          <option value="2">第三关 / 高塔挑战</option>
+          <option value="1">第二关 / 光门初见</option>
+          <option value="2">第三关 / 镜面回廊</option>
+          <option value="3">第四关 / 云雾禁区</option>
+          <option value="4">第五关 / 终局走廊</option>
         </select>
       </label>
       <button class="level-button" id="next-level" type="button">下一关</button>
-      <span class="level-progress" id="level-progress">1 / 3</span>
+      <span class="level-progress" id="level-progress">1 / 5</span>
     </div>
     <div class="debug-panel" id="debug-panel" aria-label="调试控制">
       <label for="debug-amount">增加数量</label>
@@ -131,18 +176,53 @@
     </div>
     <section class="arena" aria-label="弹弓游戏区域">
       <canvas id="game" aria-label="使用平面函数发射小鸟"></canvas>
-      <div class="toast" id="message" aria-live="polite">填写函数后点击发射</div>
+      <div class="toast fade" id="message" aria-live="polite"></div>
+      <div class="coach" id="coach-bubble" hidden>
+        <span class="coach-arrow" aria-hidden="true">↕</span>
+        <span>拖我，让虚线穿过小猪</span>
+        <button class="coach-close" id="coach-close" type="button" aria-label="关闭提示">×</button>
+      </div>
+      <div class="result-overlay" id="result-overlay" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <div class="result-card">
+          <p class="result-stars" id="result-stars">★★★</p>
+          <h2 class="result-title" id="result-title">全部命中！</h2>
+          <p class="result-detail" id="result-detail"></p>
+          <div class="result-actions">
+            <button class="result-button secondary" id="result-retry" type="button">再试一次</button>
+            <button class="result-button" id="result-next" type="button">下一关 →</button>
+          </div>
+        </div>
+      </div>
     </section>
     <div class="launch-panel" aria-label="函数发射控制">
-      <label for="launch-function">函数 <input id="launch-function" type="text" inputmode="text" value="y=4x" aria-label="发射函数"></label>
-      <button class="launch-button" id="launch-button" type="button">发射</button>
+      <div class="launch-head">
+        <label class="launch-label" for="launch-function">轨迹 · 拖圆点或直接写函数</label>
+        <input class="function-input" id="launch-function" type="text" inputmode="text" spellcheck="false" value="y=-0.35x+0.0004x^2" aria-label="发射函数">
+        <button class="launch-button" id="launch-button" type="button">发射 ▶</button>
+      </div>
+      <div class="launch-meta">
+        <div class="preview-verdict" id="preview-verdict">正在计算预览…</div>
+        <div class="function-chips" id="function-chips">
+          <button class="function-chip" type="button" data-function="y=-0.2x"><svg class="chip-icon" viewBox="0 0 28 16" aria-hidden="true"><path d="M1 13 L27 6"/></svg>平缓上升</button>
+          <button class="function-chip" type="button" data-function="y=-0.35x+0.0004x^2"><svg class="chip-icon" viewBox="0 0 28 16" aria-hidden="true"><path d="M1 14 Q 9 2 27 5"/></svg>先陡后缓</button>
+          <button class="function-chip" type="button" data-function="y=-0.4x+0.0005x^2"><svg class="chip-icon" viewBox="0 0 28 16" aria-hidden="true"><path d="M1 15 Q 7 1 27 4"/></svg>高抛越圈</button>
+          <button class="function-chip" type="button" data-function="y=-50*sin(x/100)"><svg class="chip-icon" viewBox="0 0 28 16" aria-hidden="true"><path d="M1 8 Q 7 1 14 8 T 27 8"/></svg>蛇形绕柱</button>
+        </div>
+      </div>
+      <div class="shot-result" id="shot-result"></div>
+      <div class="tune-bar" id="tune-bar" hidden>
+        <span class="tune-label">没打中？一键微调</span>
+        <button class="tune-button" type="button" data-tune="up">↑ 往上挪一点</button>
+        <button class="tune-button" type="button" data-tune="down">↓ 往下挪一点</button>
+        <button class="tune-button" type="button" data-tune="forward">↗ 往前拉</button>
+      </div>
     </div>
     <div class="bottom">
-      <div class="footer-note">红色 TNT 箱会引爆周围结构；飞行中按空格或点⚡可冲刺一次。</div>
+      <div class="footer-note">每关多一种机关：能量环 → 光门 → 镜面板 → 禁飞云 → 双窄门。预览会提前告诉你撞哪儿、往哪弹、往哪掉。</div>
       <div class="bottom-actions">
         <div class="ammo" aria-label="剩余弹药"><span>弹药</span><span class="ammo-dots" id="ammo"></span></div>
         <button class="dash-button" id="dash-button" type="button" disabled title="小鸟飞行时按空格或点击使用">⚡ 空中冲刺</button>
-        <button class="debug-toggle" id="debug-toggle" type="button" aria-expanded="false">调试</button>
+        <button class="debug-toggle" id="debug-toggle" type="button" aria-expanded="false">沙盒模式</button>
         <button class="reset" id="reset" type="button"><span aria-hidden="true">↻</span>重新开始</button>
       </div>
     </div>
@@ -156,6 +236,19 @@
     const ammoNode = document.querySelector("#ammo");
     const dashButton = document.querySelector("#dash-button");
     const messageNode = document.querySelector("#message");
+    const functionInput = document.querySelector("#launch-function");
+    const launchButton = document.querySelector("#launch-button");
+    const previewVerdictNode = document.querySelector("#preview-verdict");
+    const shotResultNode = document.querySelector("#shot-result");
+    const chipsNode = document.querySelector("#function-chips");
+    const coachNode = document.querySelector("#coach-bubble");
+    const tuneBarNode = document.querySelector("#tune-bar");
+    const resultOverlay = document.querySelector("#result-overlay");
+    const resultStarsNode = document.querySelector("#result-stars");
+    const resultTitleNode = document.querySelector("#result-title");
+    const resultDetailNode = document.querySelector("#result-detail");
+    const resultNextButton = document.querySelector("#result-next");
+    const resultRetryButton = document.querySelector("#result-retry");
     const levelTitleNode = document.querySelector("#level-title");
     const levelDescriptionNode = document.querySelector("#level-description");
     const levelSelectNode = document.querySelector("#level-select");
@@ -181,6 +274,7 @@
     let targetTotal = 3;
     let blocks = [];
     let bumpers = [];
+    let zones = [];
     let debris = [];
     let explosions = [];
     let soundOn = false;
@@ -189,10 +283,24 @@
     let physicsAccumulator = 0;
     let physicsEngine = Matter.Engine.create({ enableSleeping: true });
     let currentLevel = 0;
+    let previewPath = null;
+    let shotStats = null;
+    let gameOver = false;
+    let toastTimer = 0;
+    const controlPoints = [{ x: 180, y: -50 }, { x: 420, y: -76 }];
+    const handleXRange = { min: 70, max: 760, gap: 90 };
+    const handleYRange = { min: -320, max: 82 };
+    let draggedHandle = null;
+    let hasDragged = false;
+    let coachDismissed = false;
+    const defaultFunction = "y=-0.35x+0.0004x^2";
+    // gate: 竖直能量墙，只有中间 gap 宽的缝能穿过；void: 进入后函数失效、按惯性坠落
+    // mirror: 撞上按法线反射并脱离函数路径；ring: 穿过即点亮，全部点亮多给一发弹药
     const levels = [
       {
         title: "第一关 / 木箱练习",
-        description: "熟悉木、石、玻璃结构；撞上圆形弹力障碍会改变飞行方向。",
+        description: "拖动圆点让虚线穿过小猪；顺路穿过金色能量环，可以多拿一发弹药。",
+        startFunction: defaultFunction,
         targets: [[694, 358], [765, 358], [730, 286]],
         blocks: [
           [640, 398, 20, 76, "#8e9b9d", "stone"],
@@ -203,12 +311,31 @@
           [711, 324, 39, 54, "#b97848"],
           [711, 306, 39, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[460, 360, 28]],
-        explosives: [[604, 438, 34, 36]]
+        zones: [{ type: "ring", x: 545, y: 292, r: 22 }]
       },
       {
-        title: "第二关 / 双塔回弹",
-        description: "瞄准弹力障碍反弹，让小鸟绕开塔柱击中木架。",
+        title: "第二关 / 光门初见",
+        description: "能量墙只有中间一道缝能过 · 拖圆点让虚线对准缝，红色警告就是撞门框了。",
+        startFunction: "y=-0.62x+0.0004x^2",
+        targets: [[694, 358], [765, 358], [730, 286]],
+        blocks: [
+          [640, 398, 20, 76, "#8e9b9d", "stone"],
+          [680, 398, 29, 76, "#c78b52"],
+          [751, 398, 29, 76, "#c78b52"],
+          [800, 398, 20, 76, "#8e9b9d", "stone"],
+          [640, 378, 180, 20, "#dda86c"],
+          [711, 324, 39, 54, "#b97848"],
+          [711, 306, 39, 18, "#9edce7", "glass"]
+        ],
+        zones: [
+          { type: "gate", x: 440, center: 300, gap: 120 },
+          { type: "ring", x: 575, y: 290, r: 22 }
+        ]
+      },
+      {
+        title: "第三关 / 镜面回廊",
+        description: "别把线压得太低：下方镜面板会把小鸟弹走，反弹方向预览里画成箭头。",
+        startFunction: "y=-0.55x+0.0003x^2",
         targets: [[692, 358], [762, 358], [727, 286]],
         blocks: [
           [640, 398, 20, 76, "#8e9b9d", "stone"],
@@ -220,12 +347,16 @@
           [748, 324, 28, 54, "#b97848"],
           [684, 306, 92, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[500, 300, 30]],
-        explosives: [[604, 438, 34, 36]]
+        zones: [
+          { type: "gate", x: 425, center: 300, gap: 100 },
+          { type: "mirror", x1: 515, y1: 345, x2: 610, y2: 325 },
+          { type: "ring", x: 605, y: 289, r: 22 }
+        ]
       },
       {
-        title: "第三关 / 高塔挑战",
-        description: "三层结构考验反弹角度；破坏下层支撑，让高塔整体倒塌。",
+        title: "第四关 / 云雾禁区",
+        description: "灰紫禁飞云会让函数失效，小鸟改为自由坠落 · 绕开它，或故意借坠落砸下面的结构。",
+        startFunction: "y=-0.66x+0.0003x^2",
         targets: [[708, 358], [756, 286], [744, 214]],
         blocks: [
           [650, 398, 20, 76, "#8e9b9d", "stone"],
@@ -240,8 +371,38 @@
           [752, 252, 24, 54, "#c78b52"],
           [716, 234, 60, 18, "#9edce7", "glass"]
         ],
-        bumpers: [[525, 285, 32]],
-        explosives: [[614, 438, 34, 36]]
+        zones: [
+          { type: "gate", x: 410, center: 292, gap: 96 },
+          { type: "void", x: 555, y: 235, r: 36 },
+          { type: "mirror", x1: 470, y1: 375, x2: 565, y2: 352 },
+          { type: "ring", x: 615, y: 290, r: 22 }
+        ]
+      },
+      {
+        title: "第五关 / 终局走廊",
+        description: "两道窄缝要一条线同时穿过，云和镜面板封住上下 · 用「一键微调」一点点挪。",
+        startFunction: "y=-0.35x+0.0004x^2",
+        targets: [[708, 358], [756, 286], [744, 214]],
+        blocks: [
+          [650, 398, 20, 76, "#8e9b9d", "stone"],
+          [680, 398, 25, 76, "#c78b52"],
+          [775, 398, 25, 76, "#c78b52"],
+          [810, 398, 20, 76, "#8e9b9d", "stone"],
+          [650, 378, 180, 20, "#dda86c"],
+          [690, 324, 28, 54, "#b97848"],
+          [750, 324, 28, 54, "#b97848"],
+          [690, 306, 88, 18, "#dda86c"],
+          [716, 252, 24, 54, "#c78b52"],
+          [752, 252, 24, 54, "#c78b52"],
+          [716, 234, 60, 18, "#9edce7", "glass"]
+        ],
+        zones: [
+          { type: "gate", x: 390, center: 300, gap: 86 },
+          { type: "void", x: 485, y: 330, r: 36 },
+          { type: "gate", x: 575, center: 260, gap: 68 },
+          { type: "mirror", x1: 470, y1: 378, x2: 560, y2: 352 },
+          { type: "ring", x: 655, y: 240, r: 20 }
+        ]
       }
     ];
 
@@ -331,6 +492,7 @@
         target.knockedOut = true;
         target.knockoutTime = 0;
         score += 100;
+        if (shotStats) shotStats.targets += 1;
         setMessage("撞上木架！目标被撞倒 +100 分");
       }
     }
@@ -429,11 +591,13 @@
       const level = levels[currentLevel];
       targets = level.targets.map(([x, y]) => createTarget(x, y));
       targetTotal = targets.length;
+      const explosives = level.explosives || [];
       blocks = [
         ...level.blocks.map(([x, y, width, height, color, material]) => createBlock(x, y, width, height, color, material)),
-        ...level.explosives.map(([x, y, width, height]) => createBlock(x, y, width, height, "#d94e3d", "explosive"))
+        ...explosives.map(([x, y, width, height]) => createBlock(x, y, width, height, "#d94e3d", "explosive"))
       ];
-      bumpers = level.bumpers.map(([x, y, radius]) => ({ x, y, radius, restitution: 1, body: null }));
+      bumpers = (level.bumpers || []).map(([x, y, radius]) => ({ x, y, radius, restitution: 1, body: null }));
+      zones = (level.zones || []).map((zone, index) => ({ ...zone, index, collected: false, rewarded: false }));
       setupPhysicsWorld();
       levelTitleNode.textContent = level.title;
       levelDescriptionNode.textContent = level.description;
@@ -441,12 +605,23 @@
       levelProgressNode.textContent = `${currentLevel + 1} / ${levels.length}`;
       previousLevelButton.disabled = currentLevel === 0;
       nextLevelButton.disabled = currentLevel === levels.length - 1;
+      hideResult();
+      shotStats = null;
+      draggedHandle = null;
+      shotResultNode.textContent = "";
+      tuneBarNode.hidden = true;
+      syncFromExpression();
+      refreshPreview();
       renderHud();
-      setMessage("填写函数后点击发射");
+      updateCoach();
+      clearTimeout(toastTimer);
+      messageNode.textContent = "";
+      messageNode.classList.add("fade");
     }
 
     function changeLevel(index) {
       currentLevel = Math.max(0, Math.min(levels.length - 1, index));
+      functionInput.value = levels[currentLevel].startFunction || defaultFunction;
       resetGame();
     }
 
@@ -515,6 +690,86 @@
       return { x: startX + dx * time, y: startY + dy * time, time };
     }
 
+    const gateHalfWidth = 9;
+    const gatePadding = 10;
+
+    function expandBounds(bounds, padding) {
+      return { left: bounds.left - padding, right: bounds.right + padding, top: bounds.top - padding, bottom: bounds.bottom + padding };
+    }
+
+    function gateFrames(gate) {
+      const half = gate.gap / 2;
+      return [
+        { left: gate.x - gateHalfWidth, right: gate.x + gateHalfWidth, top: -40, bottom: gate.center - half },
+        { left: gate.x - gateHalfWidth, right: gate.x + gateHalfWidth, top: gate.center + half, bottom: floorY }
+      ];
+    }
+
+    function segmentLineIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
+      const rx = bx - ax;
+      const ry = by - ay;
+      const sx = dx - cx;
+      const sy = dy - cy;
+      const denominator = rx * sy - ry * sx;
+      if (Math.abs(denominator) < 1e-8) return null;
+      const qx = cx - ax;
+      const qy = cy - ay;
+      const t = (qx * sy - qy * sx) / denominator;
+      const u = (qx * ry - qy * rx) / denominator;
+      if (t < 0 || t > 1 || u < 0 || u > 1) return null;
+      return { x: ax + rx * t, y: ay + ry * t, time: t };
+    }
+
+    function reflectVector(vx, vy, zone) {
+      const dx = zone.x2 - zone.x1;
+      const dy = zone.y2 - zone.y1;
+      const length = Math.hypot(dx, dy) || 1;
+      let nx = -dy / length;
+      let ny = dx / length;
+      if (vx * nx + vy * ny > 0) { nx = -nx; ny = -ny; }
+      const dot = vx * nx + vy * ny;
+      return { x: vx - 2 * dot * nx, y: vy - 2 * dot * ny, nx, ny };
+    }
+
+    // 预览与真实飞行共用同一套判定：虚线上看到的结果就是发射后的结果
+    function hazardEventsForSegment(ax, ay, bx, by, seen) {
+      const events = [];
+      for (const zone of zones) {
+        const key = `${zone.type}:${zone.index}`;
+        if (seen.has(key)) continue;
+        if (zone.type === "gate") {
+          if (Math.min(ax, bx) > zone.x || Math.max(ax, bx) < zone.x) continue;
+          const frames = gateFrames(zone).map(frame => expandBounds(frame, gatePadding));
+          const crashed = frames.some(frame => segmentIntersectsBounds(ax, ay, bx, by, frame));
+          const ratio = (zone.x - ax) / ((bx - ax) || 1);
+          events.push({ type: crashed ? "gate-crash" : "gate-pass", zone, point: { x: zone.x, y: ay + (by - ay) * ratio } });
+          seen.add(key);
+        } else if (zone.type === "ring") {
+          if (zone.collected) continue;
+          const hit = segmentCircleIntersection(ax, ay, bx, by, zone.x, zone.y, zone.r);
+          if (hit) { events.push({ type: "ring", zone, point: hit }); seen.add(key); }
+        } else if (zone.type === "void") {
+          const hit = segmentCircleEntry(ax, ay, bx, by, zone.x, zone.y, zone.r + projectileRadius * .5);
+          if (hit) { events.push({ type: "void", zone, point: hit }); seen.add(key); }
+        } else if (zone.type === "mirror") {
+          const dx = zone.x2 - zone.x1;
+          const dy = zone.y2 - zone.y1;
+          const length = Math.hypot(dx, dy) || 1;
+          const nx = -dy / length * projectileRadius * .7;
+          const ny = dx / length * projectileRadius * .7;
+          for (const sign of [-1, 1]) {
+            const hit = segmentLineIntersection(
+              ax, ay, bx, by,
+              zone.x1 + nx * sign, zone.y1 + ny * sign,
+              zone.x2 + nx * sign, zone.y2 + ny * sign
+            );
+            if (hit) { events.push({ type: "mirror", zone, point: hit }); seen.add(key); break; }
+          }
+        }
+      }
+      return events;
+    }
+
     function renderHud() {
       scoreNode.textContent = String(score).padStart(4, "0");
       const remaining = targets.filter(target => target.alive && !target.knockedOut).length;
@@ -527,6 +782,7 @@
       }
       dashButton.disabled = !projectile || !projectile.launched || projectile.dashUsed;
       dashButton.textContent = projectile && projectile.dashUsed ? "✓ 已冲刺" : "⚡ 空中冲刺";
+      launchButton.disabled = gameOver || shots >= maxShots || !!(projectile && projectile.launched);
     }
 
     function useDash() {
@@ -651,7 +907,314 @@
       }
     }
 
-    function setMessage(text) { messageNode.textContent = text; }
+    function setMessage(text) {
+      messageNode.textContent = text;
+      messageNode.classList.remove("fade");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => messageNode.classList.add("fade"), 2800);
+    }
+
+    function remainingTargets() {
+      return targets.filter(target => target.alive && !target.knockedOut).length;
+    }
+
+    function computePreview(compiled) {
+      const gateZones = zones.filter(zone => zone.type === "gate");
+      const ringZones = zones.filter(zone => zone.type === "ring" && !zone.collected);
+      const result = {
+        points: [], outcome: "out", label: "", hitTargets: 0, hitBlocks: 0, hitPoint: null,
+        gatesPassed: 0, gatesTotal: gateZones.length, ringsHit: 0, ringsTotal: ringZones.length,
+        passedGates: new Set(), litRings: new Set(), effect: null, crashedGate: null
+      };
+      if (!compiled) {
+        result.outcome = "invalid";
+        result.label = "函数格式无效 · 只支持 y=f(x)，例如 y=-0.2x";
+        return result;
+      }
+      let pathX = 0;
+      let pathY = compiled.evaluate(0);
+      if (!Number.isFinite(pathY)) { pathX = .05; pathY = compiled.evaluate(pathX); }
+      if (!Number.isFinite(pathY)) {
+        result.outcome = "invalid";
+        result.label = "函数在小鸟原点附近没有有效路径";
+        return result;
+      }
+      let lastX = anchor.x;
+      let lastY = anchor.y + pathY;
+      result.points.push({ x: lastX, y: lastY });
+      const seenTargets = new Set();
+      const seenBlocks = new Set();
+      const seenHazards = new Set();
+      for (let index = 0; index < 400; index += 1) {
+        const derivativeStep = .01;
+        const before = compiled.evaluate(pathX - derivativeStep);
+        const after = compiled.evaluate(pathX + derivativeStep);
+        const derivative = Number.isFinite(before) && Number.isFinite(after)
+          ? (after - before) / (derivativeStep * 2) : 0;
+        pathX += 5 / Math.sqrt(1 + derivative * derivative);
+        pathY = compiled.evaluate(pathX);
+        if (!Number.isFinite(pathY)) { result.outcome = "invalid"; break; }
+        const x = anchor.x + pathX;
+        const y = anchor.y + pathY;
+        if (y >= floorY - projectileRadius) {
+          result.points.push({ x, y: floorY - projectileRadius });
+          result.outcome = "ground";
+          break;
+        }
+        if (x > 1000 || y < -20) {
+          result.points.push({ x, y });
+          result.outcome = "out";
+          break;
+        }
+        const hazards = hazardEventsForSegment(lastX, lastY, x, y, seenHazards);
+        let terminated = false;
+        for (const event of hazards) {
+          if (event.type === "gate-pass") {
+            result.gatesPassed += 1;
+            result.passedGates.add(event.zone.index);
+          } else if (event.type === "ring") {
+            result.ringsHit += 1;
+            result.litRings.add(event.zone.index);
+          } else if (event.type === "gate-crash") {
+            result.outcome = "gate";
+            result.crashedGate = event.zone;
+            result.points.push({ x: event.point.x, y: event.point.y });
+            terminated = true;
+          } else if (event.type === "void") {
+            result.outcome = "void";
+            result.points.push({ x: event.point.x, y: event.point.y });
+            let vx = x - lastX;
+            let vy = y - lastY;
+            let fallX = event.point.x;
+            let fallY = event.point.y;
+            const fall = [{ x: fallX, y: fallY }];
+            let chain = null;
+            for (let frame = 0; frame < 70; frame += 1) {
+              const previousFallX = fallX;
+              const previousFallY = fallY;
+              vy += .31;
+              fallX += vx;
+              fallY += vy;
+              if (fallY >= floorY - projectileRadius) { fall.push({ x: fallX, y: floorY - projectileRadius }); break; }
+              if (fallX > 1000 || fallX < -40) break;
+              fall.push({ x: fallX, y: fallY });
+              // 坠落后仍是同一套判定：撞门框、砸到镜面板、顺路收环都要提前画出来
+              const chainEvents = hazardEventsForSegment(previousFallX, previousFallY, fallX, fallY, seenHazards);
+              const ringEvent = chainEvents.find(item => item.type === "ring");
+              if (ringEvent) { result.ringsHit += 1; result.litRings.add(ringEvent.zone.index); }
+              const passEvent = chainEvents.find(item => item.type === "gate-pass");
+              if (passEvent) { result.gatesPassed += 1; result.passedGates.add(passEvent.zone.index); }
+              const stopEvent = chainEvents.find(item => ["gate-crash", "mirror", "void"].includes(item.type));
+              if (stopEvent) {
+                if (stopEvent.type === "mirror") {
+                  const reflected = reflectVector(vx, vy, stopEvent.zone);
+                  chain = { type: "mirror", point: stopEvent.point, direction: { x: reflected.x, y: reflected.y } };
+                } else if (stopEvent.type === "gate-crash") {
+                  chain = { type: "gate", point: stopEvent.point };
+                }
+                break;
+              }
+            }
+            result.effect = { type: "void", point: event.point, points: fall, chain };
+            terminated = true;
+          } else if (event.type === "mirror") {
+            result.outcome = "mirror";
+            const reflected = reflectVector(x - lastX, y - lastY, event.zone);
+            result.points.push({ x: event.point.x, y: event.point.y });
+            result.effect = { type: "mirror", point: event.point, direction: { x: reflected.x, y: reflected.y } };
+            terminated = true;
+          }
+          if (terminated) break;
+        }
+        if (terminated) break;
+        const bumper = bumpers.find(item => segmentCircleEntry(lastX, lastY, x, y, item.x, item.y, item.radius + projectileRadius));
+        if (bumper) {
+          result.points.push({ x, y });
+          result.outcome = "bumper";
+          break;
+        }
+        targets.forEach(target => {
+          if (!target.alive || target.knockedOut || seenTargets.has(target)) return;
+          const hit = segmentCircleIntersection(lastX, lastY, x, y, target.x, target.y, target.r + projectileRadius);
+          if (hit) {
+            seenTargets.add(target);
+            result.hitTargets += 1;
+            if (!result.hitPoint) result.hitPoint = { x: hit.x, y: hit.y };
+          }
+        });
+        blocks.forEach(block => {
+          if (!block.alive || seenBlocks.has(block)) return;
+          const bounds = getBlockBounds(block);
+          const expanded = {
+            left: bounds.left - projectileRadius,
+            right: bounds.right + projectileRadius,
+            top: bounds.top - projectileRadius,
+            bottom: bounds.bottom + projectileRadius
+          };
+          if (segmentIntersectsBounds(lastX, lastY, x, y, expanded)) {
+            seenBlocks.add(block);
+            result.hitBlocks += 1;
+          }
+        });
+        result.points.push({ x, y });
+        lastX = x;
+        lastY = y;
+      }
+      const extras = [];
+      if (result.gatesTotal) extras.push(`穿过 ${result.gatesPassed}/${result.gatesTotal} 道光门`);
+      if (result.ringsTotal) extras.push(`收集 ${result.ringsHit}/${result.ringsTotal} 个能量环`);
+      const suffix = extras.length ? ` · ${extras.join(" · ")}` : "";
+      if (result.outcome === "gate") result.label = "× 会撞上光门门框 · 拖圆点让虚线从中间那道缝穿过";
+      else if (result.outcome === "void") result.label = "会从禁飞云里掉出轨迹 · 橙色点线是坠落路线，绕开它或借力砸下方";
+      else if (result.outcome === "mirror") result.label = "会撞上镜面板弹开 · 橙色箭头就是反弹方向";
+      else if (result.outcome === "ground") result.label = `× 会在 x≈${Math.round(pathX)} 撞地 · 两个圆点换着拖，看虚线怎么变`;
+      else if (result.outcome === "bumper") result.label = "会被弹力圈弹开 · 换个圆点拖拖看，绕开它";
+      else if (result.outcome === "invalid") result.label = result.label || "函数路径无效";
+      else if (result.hitTargets) result.label = `✓ 预计命中 ${result.hitTargets} 只小猪${suffix}`;
+      else if (result.hitBlocks) result.label = `预计撞到 ${result.hitBlocks} 个结构，但没碰到小猪${suffix}`;
+      else result.label = `预计不会命中 · 拖动圆点让虚线靠近右侧木架${suffix}`;
+      return result;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function formatCoefficient(value) {
+      if (!Number.isFinite(value) || Math.abs(value) < 1e-7) return "0";
+      const rounded = Math.abs(value) >= 1 ? Number(value.toFixed(3)) : Number(value.toPrecision(3));
+      return String(Number.isFinite(rounded) ? rounded : 0);
+    }
+
+    function quadraticExpression(a, b) {
+      const noLinear = Math.abs(b) < 1e-7;
+      const curved = Math.abs(a) >= 1e-6;
+      if (!curved && noLinear) return "y=0";
+      if (!curved) return `y=${formatCoefficient(b)}x`;
+      const linearPart = noLinear ? "" : `${formatCoefficient(b)}x`;
+      const sign = a >= 0 && linearPart ? "+" : "";
+      return `y=${linearPart}${sign}${formatCoefficient(a)}x^2`;
+    }
+
+    function positionCoach() {
+      const handle = controlPoints[0];
+      coachNode.style.left = `${(anchor.x + handle.x) / 10}%`;
+      coachNode.style.top = `${(anchor.y + handle.y - 18) / 5.6}%`;
+    }
+
+    function updateCoach() {
+      const shouldHide = coachDismissed || hasDragged || shots > 0 || currentLevel !== 0
+        || gameOver || !!(projectile && projectile.launched);
+      if (coachNode.hidden !== shouldHide) coachNode.hidden = shouldHide;
+      if (!shouldHide) positionCoach();
+    }
+
+    function syncFromControls() {
+      const [first, second] = controlPoints;
+      const firstRatio = first.y / first.x;
+      const secondRatio = second.y / second.x;
+      const a = (secondRatio - firstRatio) / (second.x - first.x);
+      const b = firstRatio - a * first.x;
+      functionInput.value = quadraticExpression(a, b);
+      refreshPreview();
+      updateCoach();
+    }
+
+    function syncFromExpression() {
+      const compiled = compilePathFunction(functionInput.value);
+      if (!compiled) return;
+      controlPoints.forEach(handle => {
+        const value = compiled.evaluate(handle.x);
+        if (Number.isFinite(value)) handle.y = clamp(value, handleYRange.min, handleYRange.max);
+      });
+    }
+
+    function findControlHandleAt(point) {
+      if (gameOver || (projectile && projectile.launched)) return -1;
+      return controlPoints.findIndex(handle =>
+        Math.hypot(point.x - (anchor.x + handle.x), point.y - (anchor.y + handle.y)) <= 18);
+    }
+
+    function moveControlHandle(index, point) {
+      hasDragged = true;
+      const handle = controlPoints[index];
+      const desiredX = point.x - anchor.x;
+      if (index === 0) handle.x = clamp(desiredX, handleXRange.min, controlPoints[1].x - handleXRange.gap);
+      else handle.x = clamp(desiredX, controlPoints[0].x + handleXRange.gap, handleXRange.max);
+      handle.y = clamp(point.y - anchor.y, handleYRange.min, handleYRange.max);
+      syncFromControls();
+    }
+
+    function applyTune(kind) {
+      if (kind === "forward") {
+        controlPoints[1].x = clamp(controlPoints[1].x + 48, controlPoints[0].x + handleXRange.gap, handleXRange.max);
+      } else {
+        const shift = kind === "up" ? -16 : 16;
+        controlPoints.forEach(handle => { handle.y = clamp(handle.y + shift, handleYRange.min, handleYRange.max); });
+      }
+      syncFromControls();
+      setMessage("轨迹已微调 · 看虚线预览，再决定要不要发射");
+    }
+
+    function refreshPreview() {
+      const raw = functionInput.value;
+      previewPath = computePreview(compilePathFunction(raw));
+      const bad = ["invalid", "ground", "bumper", "gate", "void", "mirror"].includes(previewPath.outcome);
+      previewVerdictNode.textContent = previewPath.label;
+      previewVerdictNode.className = `preview-verdict${bad ? " warn" : ""}`;
+      const normalized = raw.trim().toLowerCase().replace(/\s+/g, "");
+      chipsNode.querySelectorAll(".function-chip").forEach(chip => {
+        chip.classList.toggle("active", chip.dataset.function === normalized);
+      });
+    }
+
+    function finishShot(reason) {
+      projectile = null;
+      const stats = shotStats || { targets: 0, blocks: 0, blasts: 0, bumper: false, gates: 0, rings: 0, mirror: false, void: false };
+      const parts = [];
+      if (stats.bumper) parts.push("被弹力圈反弹");
+      if (stats.mirror) parts.push("被镜面板弹开");
+      if (stats.void) parts.push("从禁飞云坠落");
+      if (stats.gates) parts.push(`穿过 ${stats.gates} 道光门`);
+      if (stats.rings) parts.push(`收集 ${stats.rings} 个能量环`);
+      if (stats.targets) parts.push(`命中 ${stats.targets} 只小猪`);
+      if (stats.blasts) parts.push(`引爆 ${stats.blasts} 个 TNT`);
+      if (stats.blocks) parts.push(`击碎 ${stats.blocks} 个结构`);
+      if (reason === "gate") parts.push("撞上光门门框");
+      else if (reason === "ground") parts.push("撞地");
+      else if (reason === "invalid") parts.push("路径失效");
+      if (!parts.length) parts.push("空过，什么都没碰到");
+      const left = Math.max(0, maxShots - shots);
+      const leftTargets = remainingTargets();
+      const summary = parts.join(" · ");
+      shotResultNode.textContent = `上一发：${summary} · 还剩 ${left} 发 · 还差 ${leftTargets} 只`;
+      setMessage(summary);
+      shotStats = null;
+      renderHud();
+      if (leftTargets === 0) { showResult(true); return; }
+      if (left <= 0) { showResult(false); return; }
+      tuneBarNode.hidden = false;
+      refreshPreview();
+    }
+
+    function showResult(win) {
+      gameOver = true;
+      const left = Math.max(0, maxShots - shots);
+      const leftTargets = remainingTargets();
+      resultStarsNode.textContent = win ? "★".repeat(Math.max(1, Math.min(3, left + 1))) : "☆☆☆";
+      resultTitleNode.textContent = win ? "全部命中！" : "弹药用完了";
+      resultDetailNode.textContent = win
+        ? `得分 ${score} · 剩余 ${left} 发 · 本关函数：${functionInput.value.trim()}`
+        : `还差 ${leftTargets} 只小猪 · 点「再试一次」，先看预览有没有撞门框或掉进禁飞云`;
+      resultNextButton.style.display = win && currentLevel < levels.length - 1 ? "" : "none";
+      resultOverlay.classList.add("open");
+      renderHud();
+    }
+
+    function hideResult() {
+      gameOver = false;
+      resultOverlay.classList.remove("open");
+    }
 
     function compilePathFunction(expression) {
       const normalized = expression.trim().toLowerCase().replace(/\s+/g, "");
@@ -675,13 +1238,18 @@
     }
 
     function launchWithFunction() {
-      if (shots >= maxShots || (projectile && projectile.launched)) {
-        setMessage("当前不能发射，请等待小鸟落地");
+      if (gameOver) {
+        setMessage("本关已结束 · 点「再试一次」或「下一关」继续");
         return;
       }
-      const compiledFunction = compilePathFunction(document.querySelector("#launch-function").value);
+      if (shots >= maxShots || (projectile && projectile.launched)) {
+        setMessage("当前不能发射，请等待这一发结束");
+        return;
+      }
+      const compiledFunction = compilePathFunction(functionInput.value);
       if (!compiledFunction) {
-        setMessage("函数格式无效，例如 y=4x 或 y=x^2");
+        setMessage("函数格式无效 · 只支持 y=f(x)，例如 y=-0.2x");
+        refreshPreview();
         return;
       }
       let pathX = 0;
@@ -695,7 +1263,10 @@
         return;
       }
       shots += 1;
-      projectile = { x: anchor.x + pathX, y: anchor.y + pathY, pathX, pathY, pathStep: 5, evaluate: compiledFunction.evaluate, vx: 0, vy: 0, launched: true, age: 0, hitTargets: new Set(), pathActive: true, dashUsed: false };
+      updateCoach();
+      shotStats = { targets: 0, blocks: 0, blasts: 0, bumper: false, gates: 0, rings: 0, mirror: false, void: false };
+      projectile = { x: anchor.x + pathX, y: anchor.y + pathY, pathX, pathY, pathStep: 5, evaluate: compiledFunction.evaluate, vx: 0, vy: 0, launched: true, age: 0, hitTargets: new Set(), seenZones: new Set(), pathActive: true, dashUsed: false };
+      shotResultNode.textContent = "飞行中 · 空格可冲刺一次";
       renderHud();
       setMessage(`已发射：${compiledFunction.normalized}`);
       playSound(280, .08);
@@ -861,12 +1432,285 @@
       ctx.restore();
     }
 
+    function drawZoneLabel(text, x, y) {
+      const width = text.length * 12 + 14;
+      roundedRect(x - width / 2, y - 13, width, 20, 6, "#ffffffdd");
+      ctx.fillStyle = "#315e4d";
+      ctx.font = "bold 11px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(text, x, y + 1);
+    }
+
+    function drawZone(zone) {
+      const previewVisible = !gameOver && !(projectile && projectile.launched) && previewPath;
+      ctx.save();
+      ctx.textAlign = "center";
+      if (zone.type === "gate") {
+        const passed = previewVisible && previewPath.passedGates.has(zone.index);
+        const crashed = previewVisible && previewPath.crashedGate === zone;
+        const accent = crashed ? "#d9664a" : passed ? "#6fb269" : "#3f8f9c";
+        gateFrames(zone).forEach(frame => {
+          const height = frame.bottom - frame.top;
+          roundedRect(frame.left, frame.top, frame.right - frame.left, height, 5, "#2f6f7d");
+          ctx.save();
+          ctx.beginPath(); ctx.rect(frame.left, frame.top, frame.right - frame.left, height); ctx.clip();
+          ctx.strokeStyle = "#8fe3e855";
+          ctx.lineWidth = 2;
+          for (let y = frame.top - 20; y < frame.bottom + 20; y += 13) {
+            ctx.beginPath(); ctx.moveTo(frame.left - 4, y); ctx.lineTo(frame.right + 4, y - 10); ctx.stroke();
+          }
+          ctx.restore();
+          ctx.strokeStyle = accent;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(frame.left, frame.top, frame.right - frame.left, height);
+        });
+        const half = zone.gap / 2;
+        ctx.fillStyle = crashed ? "#e8785938" : "#b8f0e333";
+        ctx.fillRect(zone.x - gateHalfWidth, zone.center - half, gateHalfWidth * 2, zone.gap);
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(zone.x, zone.center - half); ctx.lineTo(zone.x, zone.center + half); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = accent;
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillText("▽", zone.x, zone.center - half - 5);
+        ctx.fillText("△", zone.x, zone.center + half + 14);
+        drawZoneLabel("光门 · 走缝", zone.x, 22);
+      } else if (zone.type === "void") {
+        ctx.fillStyle = "#6b6180";
+        [[-.45, .12, .72], [.42, .16, .66], [0, -.22, .82]].forEach(([ox, oy, scale]) => {
+          ctx.beginPath();
+          ctx.arc(zone.x + zone.r * ox, zone.y + zone.r * oy, zone.r * scale, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.strokeStyle = "#d9d2e8";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = "#fff8e8";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(zone.x - 9, zone.y - 9); ctx.lineTo(zone.x + 9, zone.y + 9);
+        ctx.moveTo(zone.x + 9, zone.y - 9); ctx.lineTo(zone.x - 9, zone.y + 9);
+        ctx.stroke();
+        drawZoneLabel("禁飞云", zone.x, zone.y - zone.r - 11);
+      } else if (zone.type === "mirror") {
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#4d6a70";
+        ctx.lineWidth = 12;
+        ctx.beginPath(); ctx.moveTo(zone.x1, zone.y1); ctx.lineTo(zone.x2, zone.y2); ctx.stroke();
+        ctx.strokeStyle = "#cfe3e6";
+        ctx.lineWidth = 7;
+        ctx.beginPath(); ctx.moveTo(zone.x1, zone.y1); ctx.lineTo(zone.x2, zone.y2); ctx.stroke();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(zone.x1, zone.y1 - 2); ctx.lineTo(zone.x2, zone.y2 - 2); ctx.stroke();
+        ctx.fillStyle = "#315e4d";
+        [[zone.x1, zone.y1], [zone.x2, zone.y2]].forEach(([x, y]) => {
+          ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+        });
+        drawZoneLabel("镜面板", (zone.x1 + zone.x2) / 2, (zone.y1 + zone.y2) / 2 + 30);
+      } else if (zone.type === "ring") {
+        const lit = zone.collected || (previewVisible && previewPath.litRings.has(zone.index));
+        ctx.strokeStyle = lit ? "#f3c95d" : "#b08a3c";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = "#fff8e8";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.arc(zone.x, zone.y, zone.r - 6, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        if (lit) {
+          ctx.fillStyle = "#f3c95d55";
+          ctx.beginPath(); ctx.arc(zone.x, zone.y, zone.r - 4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = lit ? "#fffdf5" : "#8a6f35";
+        ctx.font = "bold 13px sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText(lit ? "✓" : "★", zone.x, zone.y);
+        ctx.textBaseline = "alphabetic";
+        drawZoneLabel(zone.collected ? "已收集" : "能量环", zone.x, zone.y + zone.r + 16);
+      }
+      ctx.restore();
+    }
+
+    function drawCoordinateGrid() {
+      const flying = projectile && projectile.launched;
+      ctx.save();
+      ctx.globalAlpha = flying ? .12 : .5;
+      ctx.lineWidth = .6;
+      ctx.strokeStyle = "#5e918c";
+      ctx.beginPath();
+      for (let x = anchor.x + 50; x < 1000; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, floorY); }
+      for (let x = anchor.x - 50; x > 0; x -= 50) { ctx.moveTo(x, 0); ctx.lineTo(x, floorY); }
+      for (let y = anchor.y + 50; y < floorY; y += 50) { ctx.moveTo(0, y); ctx.lineTo(1000, y); }
+      for (let y = anchor.y - 50; y > 0; y -= 50) { ctx.moveTo(0, y); ctx.lineTo(1000, y); }
+      ctx.stroke();
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = "#427a72";
+      ctx.beginPath();
+      for (let x = anchor.x + 100; x < 1000; x += 100) { ctx.moveTo(x, 0); ctx.lineTo(x, floorY); }
+      for (let x = anchor.x - 100; x > 0; x -= 100) { ctx.moveTo(x, 0); ctx.lineTo(x, floorY); }
+      for (let y = anchor.y + 100; y < floorY; y += 100) { ctx.moveTo(0, y); ctx.lineTo(1000, y); }
+      for (let y = anchor.y - 100; y > 0; y -= 100) { ctx.moveTo(0, y); ctx.lineTo(1000, y); }
+      ctx.stroke();
+      ctx.globalAlpha = flying ? .32 : .9;
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = "#315e4d";
+      ctx.beginPath();
+      ctx.moveTo(anchor.x, 0); ctx.lineTo(anchor.x, floorY);
+      ctx.moveTo(0, anchor.y); ctx.lineTo(1000, anchor.y);
+      ctx.stroke();
+      ctx.fillStyle = "#315e4d";
+      ctx.beginPath(); ctx.moveTo(1000, anchor.y); ctx.lineTo(990, anchor.y - 5); ctx.lineTo(990, anchor.y + 5); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(anchor.x, floorY); ctx.lineTo(anchor.x - 5, floorY - 10); ctx.lineTo(anchor.x + 5, floorY - 10); ctx.closePath(); ctx.fill();
+      ctx.font = "bold 11px sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      for (let dx = 100; dx <= 700; dx += 100) ctx.fillText(String(dx), anchor.x + dx, anchor.y + 13);
+      ctx.textAlign = "right";
+      for (let dy = -100; dy >= -300; dy -= 100) ctx.fillText(`↑${-dy}`, anchor.x - 8, anchor.y + dy);
+      ctx.textAlign = "left";
+      ctx.fillText("O", anchor.x + 9, anchor.y - 10);
+      ctx.globalAlpha = 1;
+      roundedRect(742, 12, 246, 26, 8, "#315e4dd9");
+      ctx.fillStyle = "#fffdf5";
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("↑ 抬高 · 拖圆点改轨迹", 754, 26);
+      ctx.restore();
+    }
+
+    function drawDirectionArrow(point, direction) {
+      const length = Math.hypot(direction.x, direction.y) || 1;
+      const ux = direction.x / length;
+      const uy = direction.y / length;
+      const endX = point.x + ux * 72;
+      const endY = point.y + uy * 72;
+      ctx.strokeStyle = "#e87859";
+      ctx.fillStyle = "#e87859";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(point.x, point.y); ctx.lineTo(endX, endY); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - ux * 13 - uy * 7, endY - uy * 13 + ux * 7);
+      ctx.lineTo(endX - ux * 13 + uy * 7, endY - uy * 13 - ux * 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawPreview() {
+      if (gameOver || (projectile && projectile.launched)) return;
+      if (!previewPath || previewPath.points.length < 2) return;
+      const points = previewPath.points;
+      const outcome = previewPath.outcome;
+      const interrupted = ["gate", "void", "mirror"].includes(outcome);
+      ctx.save();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = interrupted ? "#d9664a" : "#c4472a";
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      points.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      const last = points[points.length - 1];
+      const tip = { x: Math.min(last.x, 984), y: last.y };
+      const effect = previewPath.effect;
+      if (effect && effect.type === "void") {
+        ctx.strokeStyle = "#e87859";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 6]);
+        ctx.beginPath();
+        effect.points.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const end = effect.points[effect.points.length - 1];
+        ctx.beginPath(); ctx.arc(end.x, end.y, 7, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (effect && effect.type === "mirror") drawDirectionArrow(effect.point, effect.direction);
+      if (effect && effect.type === "void" && effect.chain) {
+        if (effect.chain.type === "mirror") drawDirectionArrow(effect.chain.point, effect.chain.direction);
+        else if (effect.chain.type === "gate") {
+          const mark = effect.chain.point;
+          ctx.strokeStyle = "#d9664a";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(mark.x - 7, mark.y - 7); ctx.lineTo(mark.x + 7, mark.y + 7);
+          ctx.moveTo(mark.x + 7, mark.y - 7); ctx.lineTo(mark.x - 7, mark.y + 7);
+          ctx.stroke();
+        }
+      }
+      ctx.strokeStyle = "#c4472a";
+      ctx.lineWidth = 2.5;
+      if (outcome === "ground" || outcome === "gate") {
+        ctx.beginPath();
+        ctx.moveTo(last.x - 7, last.y - 7); ctx.lineTo(last.x + 7, last.y + 7);
+        ctx.moveTo(last.x + 7, last.y - 7); ctx.lineTo(last.x - 7, last.y + 7);
+        ctx.stroke();
+      } else if (outcome === "void" || outcome === "mirror") {
+        ctx.strokeStyle = "#d9664a";
+        ctx.beginPath(); ctx.arc(last.x, last.y, 9, 0, Math.PI * 2); ctx.stroke();
+      } else if (previewPath.hitPoint) {
+        const mark = previewPath.hitPoint;
+        ctx.beginPath(); ctx.arc(mark.x, mark.y, 15, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(mark.x, mark.y, 8, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#c4472a";
+        ctx.beginPath(); ctx.arc(mark.x, mark.y, 3, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, 14, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#c4472a";
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawControlHandles() {
+      if (gameOver || (projectile && projectile.launched)) return;
+      ctx.save();
+      controlPoints.forEach((handle, index) => {
+        const x = anchor.x + handle.x;
+        const y = anchor.y + handle.y;
+        const active = draggedHandle === index;
+        ctx.globalAlpha = .5;
+        ctx.strokeStyle = "#c4472a";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 5]);
+        ctx.beginPath();
+        ctx.moveTo(x, y - 32); ctx.lineTo(x, y + 32);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#fffdf5";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(x, y, active ? 15 : 13, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = active ? "#e87859" : "#fffdf5";
+        ctx.strokeStyle = "#c4472a";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(x, y, active ? 13 : 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = active ? "#fffdf5" : "#c4472a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y - 2); ctx.lineTo(x + 4, y - 2);
+        ctx.moveTo(x - 4, y + 2); ctx.lineTo(x + 4, y + 2);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
     function draw() {
       drawBackground();
+      drawCoordinateGrid();
+      zones.forEach(drawZone);
       drawSlingshot();
       bumpers.forEach(drawBumper);
       blocks.forEach(drawBlock);
       targets.forEach(target => { if (target.alive) drawTarget(target); });
+      drawPreview();
+      drawControlHandles();
+      updateCoach();
       if (projectile && projectile.launched) {
         if (projectile.dashFlash > 0) {
           ctx.save();
@@ -907,6 +1751,17 @@
 
     canvas.addEventListener("pointerdown", event => {
       const point = pointerPosition(event);
+      const handleIndex = findControlHandleAt(point);
+      if (handleIndex >= 0) {
+        const firstDrag = !hasDragged;
+        draggedHandle = handleIndex;
+        hasDragged = true;
+        canvas.setPointerCapture(event.pointerId);
+        event.preventDefault();
+        updateCoach();
+        if (firstDrag) setMessage("虚线跟着你变了 · 满意就点「发射」，不满意继续拖");
+        return;
+      }
       const debugOpen = document.querySelector("#debug-panel").classList.contains("open");
       const target = [...targets].reverse().find(item => item.alive && Math.hypot(point.x - item.x, point.y - item.y) < item.r + 10);
       if (debugOpen && target) {
@@ -917,7 +1772,7 @@
         return;
       }
       const obstacle = findObstacleAt(point);
-      if (obstacle) {
+      if (obstacle && debugOpen) {
         draggedObstacle = obstacle;
         const centerX = obstacle.radius ? obstacle.x : obstacle.x + obstacle.w / 2;
         const centerY = obstacle.radius ? obstacle.y : obstacle.y + obstacle.h / 2;
@@ -929,6 +1784,10 @@
     });
 
     canvas.addEventListener("pointermove", event => {
+      if (draggedHandle !== null) {
+        moveControlHandle(draggedHandle, pointerPosition(event));
+        return;
+      }
       if (draggedObstacle) {
         moveObstacle(draggedObstacle, pointerPosition(event));
         return;
@@ -944,6 +1803,10 @@
     });
 
     canvas.addEventListener("pointerup", () => {
+      if (draggedHandle !== null) {
+        draggedHandle = null;
+        return;
+      }
       if (draggedObstacle) {
         draggedObstacle = null;
         draggedObstacleOffset = null;
@@ -956,11 +1819,12 @@
       }
     });
 
-    canvas.addEventListener("pointercancel", () => { dragging = false; draggedTarget = null; draggedTargetPoint = null; draggedObstacle = null; draggedObstacleOffset = null; dragPoint = { ...anchor }; });
+    canvas.addEventListener("pointercancel", () => { dragging = false; draggedHandle = null; draggedTarget = null; draggedTargetPoint = null; draggedObstacle = null; draggedObstacleOffset = null; dragPoint = { ...anchor }; });
 
     function breakBlock(block) {
       if (!block.alive) return;
       block.alive = false;
+      if (shotStats) shotStats.blocks += 1;
       if (block.body) Matter.Composite.remove(physicsEngine.world, block.body);
       wakePhysicsBodies();
       for (let index = 0; index < 5; index += 1) {
@@ -1002,6 +1866,7 @@
       if (!crate.alive || crate.exploded) return;
       crate.exploded = true;
       crate.alive = false;
+      if (shotStats) shotStats.blasts += 1;
       if (crate.body) Matter.Composite.remove(physicsEngine.world, crate.body);
       const centerX = crate.x + crate.w / 2;
       const centerY = crate.y + crate.h / 2;
@@ -1066,6 +1931,7 @@
     function explodeTarget(target) {
       target.alive = false;
       target.knockedOut = true;
+      if (shotStats) shotStats.targets += 1;
       if (target.body) Matter.Composite.remove(physicsEngine.world, target.body);
       explosions.push({ x: target.x, y: target.y, age: 0, duration: 28 });
       for (let index = 0; index < 10; index += 1) {
@@ -1286,8 +2152,7 @@
           projectile.pathX += Math.max(horizontalStep, .0001 * step);
           projectile.pathY = projectile.evaluate(projectile.pathX);
           if (!Number.isFinite(projectile.pathY)) {
-            projectile = null;
-            setMessage("路径无效，发射结束");
+            finishShot("invalid");
           } else {
             projectile.x = anchor.x + projectile.pathX;
             projectile.y = anchor.y + projectile.pathY;
@@ -1303,6 +2168,55 @@
       if (projectile && projectile.launched) {
         let collisionStartX = previousProjectileX;
         let collisionStartY = previousProjectileY;
+        const hazardEvents = hazardEventsForSegment(
+          collisionStartX, collisionStartY, projectile.x, projectile.y, projectile.seenZones
+        );
+        for (const event of hazardEvents) {
+          if (event.type === "gate-pass") {
+            score += 30;
+            if (shotStats) shotStats.gates += 1;
+            explosions.push({ x: event.point.x, y: event.point.y, age: 0, duration: 18, type: "gate" });
+            setMessage("穿过光门 +30 · 缝对准了");
+            playSound(660, .09);
+          } else if (event.type === "ring") {
+            event.zone.collected = true;
+            score += 80;
+            if (shotStats) shotStats.rings += 1;
+            explosions.push({ x: event.point.x, y: event.point.y, age: 0, duration: 20, type: "ring" });
+            const rings = zones.filter(zone => zone.type === "ring");
+            const completed = rings.length > 0 && rings.every(zone => zone.collected);
+            if (completed && !event.zone.rewarded) {
+              maxShots += 1;
+              rings.forEach(zone => { zone.rewarded = true; });
+              setMessage("能量环集齐！弹药 +1 ⚡");
+            } else {
+              setMessage("收集能量环 +80 · 集齐本关所有环可多一发");
+            }
+            playSound(880, .12);
+            refreshPreview();
+          } else if (event.type === "gate-crash") {
+            explosions.push({ x: event.point.x, y: event.point.y, age: 0, duration: 22, type: "gate" });
+            setMessage("撞上光门门框！拖圆点让虚线对准中间的缝");
+            playSound(180, .16);
+            finishShot("gate");
+            return;
+          } else if (event.type === "void") {
+            projectile.pathActive = false;
+            if (shotStats) shotStats.void = true;
+            setMessage("进入禁飞云 · 函数失效，小鸟按惯性坠落");
+            playSound(240, .14);
+          } else if (event.type === "mirror") {
+            const reflected = reflectVector(projectile.vx, projectile.vy, event.zone);
+            projectile.vx = reflected.x;
+            projectile.vy = reflected.y;
+            projectile.x = event.point.x + reflected.nx * (projectileRadius + 2);
+            projectile.y = event.point.y + reflected.ny * (projectileRadius + 2);
+            projectile.pathActive = false;
+            if (shotStats) shotStats.mirror = true;
+            setMessage("撞上镜面板，反弹！");
+            playSound(520, .12);
+          }
+        }
         for (const bumper of bumpers) {
           const hitPoint = segmentCircleEntry(
             collisionStartX,
@@ -1328,6 +2242,7 @@
           projectile.x += projectile.vx * step * (1 - hitPoint.time);
           projectile.y += projectile.vy * step * (1 - hitPoint.time);
           projectile.pathActive = false;
+          if (shotStats) shotStats.bumper = true;
           collisionStartX = hitPoint.x;
           collisionStartY = hitPoint.y;
           setMessage("撞上弹力障碍，反弹！");
@@ -1350,10 +2265,10 @@
             damageBlock(block, projectile.x, projectile.y, projectile.vx, projectile.vy);
           }
         }
-        if (projectile.x < -40 || projectile.x > 1040 || projectile.y < -40 || projectile.y > 600) {
-          projectile = null;
-          if (shots >= maxShots) setMessage(targets.some(target => target.alive && !target.knockedOut) ? "弹药用完了，重新开始再挑战！" : "全部命中！太棒了！按重新开始再玩一局");
-          else setMessage(targets.some(target => target.alive && !target.knockedOut) ? "路径出界，再输入函数发射" : "全部命中！太棒了！");
+        if (projectile.y >= floorY - projectileRadius) {
+          finishShot("ground");
+        } else if (projectile.x < -40 || projectile.x > 1040 || projectile.y < -40) {
+          finishShot("out");
         }
       }
       syncPhysicsObjects();
@@ -1394,6 +2309,34 @@
     }
 
     document.querySelector("#reset").addEventListener("click", resetGame);
+    let previewTimer = 0;
+    functionInput.addEventListener("input", () => {
+      syncFromExpression();
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(refreshPreview, 80);
+    });
+    functionInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") launchWithFunction();
+    });
+    chipsNode.addEventListener("click", event => {
+      const chip = event.target.closest(".function-chip");
+      if (!chip) return;
+      functionInput.value = chip.dataset.function;
+      syncFromExpression();
+      refreshPreview();
+      functionInput.focus();
+    });
+    document.querySelector("#coach-close").addEventListener("click", () => {
+      coachDismissed = true;
+      updateCoach();
+    });
+    tuneBarNode.addEventListener("click", event => {
+      const button = event.target.closest(".tune-button");
+      if (!button) return;
+      applyTune(button.dataset.tune);
+    });
+    resultRetryButton.addEventListener("click", resetGame);
+    resultNextButton.addEventListener("click", () => changeLevel(currentLevel + 1));
     dashButton.addEventListener("click", useDash);
     document.addEventListener("keydown", event => {
       if (event.code !== "Space" || event.repeat || !projectile || !projectile.launched || projectile.dashUsed
