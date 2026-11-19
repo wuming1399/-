@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b8e6ed">
+  <title>弹弓小队 · 游戏中心</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20302f;
+      --muted: #667775;
+      --green: #315e4d;
+      --coral: #e87859;
+      --yellow: #f3c95d;
+      --line: #d7e1d8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(circle at 12% 8%, #ffffff 0, transparent 42%),
+                  radial-gradient(circle at 88% 92%, #e7f2d8 0, transparent 45%),
+                  #f5f4e9;
+      font-family: "Trebuchet MS", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+    }
+    .page { width: min(100% - 40px, 1040px); margin: 0 auto; padding: 42px 0 48px; }
+
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 800; letter-spacing: .04em; color: var(--green); }
+    .mark { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; color: var(--ink); background: var(--yellow); font-size: 22px; font-weight: 900; transform: rotate(-7deg); }
+
+    .intro { margin: 30px 0 34px; }
+    .kicker { margin: 0 0 10px; color: var(--coral); font-size: 12px; font-weight: 900; letter-spacing: .18em; }
+    h1 { margin: 0; font-size: clamp(34px, 6vw, 56px); line-height: 1.05; letter-spacing: -.01em; }
+    .subtitle { margin: 14px 0 0; max-width: 640px; color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf5;
+      box-shadow: 0 10px 26px #37563a10;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--accent); }
+    .card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 16px 34px #37563a1c; }
+    .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+    .icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 15px; background: var(--accent-soft); color: var(--accent); font-size: 27px; font-weight: 900; }
+    .card h2 { margin: 22px 0 8px; font-size: 21px; }
+    .card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+    .tag { padding: 5px 10px; border-radius: 999px; background: #f0f2e6; color: #5b6b5e; font-size: 11px; font-weight: 800; }
+    .go { margin-top: auto; padding-top: 22px; color: var(--accent); font-size: 13px; font-weight: 900; }
+    .go span { display: inline-block; transition: transform .18s ease; }
+    .card:hover .go span { transform: translateX(5px); }
+
+    .note { margin-top: 34px; padding: 18px 20px; border: 1px dashed #c9d6c7; border-radius: 12px; background: #f8f6e8; color: #5f6e60; font-size: 12.5px; line-height: 1.85; }
+    .note strong { color: var(--green); }
+    .note code { padding: 1px 6px; border-radius: 5px; background: #eae9d8; font-size: 11.5px; }
+    .foot { margin-top: 22px; color: #9aa49b; font-size: 11px; text-align: center; }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 28px, 520px); padding-top: 28px; }
+      .card { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="brand"><span class="mark">↗</span><span>弹弓小队 · GAME HUB</span></div>
+
+    <section class="intro">
+      <p class="kicker">SLINGSHOT SQUAD</p>
+      <h1>选一个训练场，<br>开始你的弹弓挑战</h1>
+      <p class="subtitle">两个可玩的小游戏，基于 Matter.js 物理引擎。点下方卡片直接进入；在本页面里所有资源都是本地相对路径，双击或用 GitHub Pages 打开都能正常运行。</p>
+    </section>
+
+    <div class="cards">
+      <a class="card" href="./Untitled-2.html" style="--accent:#e87859; --accent-soft:#fde8df;">
+        <div class="icon">◎</div>
+        <h2>瞄准，拉弓，发射！</h2>
+        <p>拖动小队成员瞄准发射，撞倒所有小猪。含木箱、石块、玻璃、弹力障碍与 TNT 连锁爆破，共 3 个关卡。</p>
+        <div class="tags"><span class="tag">3 个关卡</span><span class="tag">物理弹弓</span><span class="tag">TNT 爆破</span></div>
+        <div class="go">进入游戏 <span>→</span></div>
+      </a>
+
+      <a class="card" href="./Untitled-2.1.html" style="--accent:#315e4d; --accent-soft:#dfeee2;">
+        <div class="icon">ƒ</div>
+        <h2>输入函数，沿线前进！</h2>
+        <p>用函数控制飞行轨迹，让小鸟沿设定的路线前进。边玩边理解函数与路径的关系，是进阶挑战关。</p>
+        <div class="tags"><span class="tag">函数关卡</span><span class="tag">路径规划</span><span class="tag">进阶玩法</span></div>
+        <div class="go">进入游戏 <span>→</span></div>
+      </a>
+    </div>
+
+    <div class="note">
+      <strong>在 GitHub 上怎么玩？</strong><br>
+      GitHub 会把 <code>.html</code> 当纯文本展示，所以直接点开仓库里的文件只会看到源代码。需要在仓库 <strong>Settings → Pages</strong> 里把 Source 设为 <code>main</code> 分支根目录并保存，然后访问<br>
+      <code>https://wuming1399.github.io/-/</code><br>
+      就能看到这个入口页并直接游玩。想本地玩的话，双击 <code>Untitled-2.html</code> 即可（<code>matter.min.js</code> 需和它保持在同一目录）。
+    </div>
+
+    <div class="foot">弹弓小队 · 用 Matter.js 驱动 · 所有资源均为本地相对路径</div>
+  </main>
+</body>
+</html>
